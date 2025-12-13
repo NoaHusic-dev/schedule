@@ -31,11 +31,10 @@ func NewSchedulesService(c *raptor.Config) *SchedulesService {
 			return err
 		}
 
-		initialSchedule, err := s.edupageClient.GetFullSchedule(time.Now())
+		err = s.Update()
 		if err != nil {
 			return err
 		}
-		s.Schedule = initialSchedule
 
 		go s.startScheduler()
 
@@ -51,25 +50,29 @@ func (s *SchedulesService) Current() internal.ScheduleResponse {
 	return s.Schedule
 }
 
+func (s *SchedulesService) Update() error {
+	newSchedule, err := s.edupageClient.GetFullSchedule(time.Now())
+	if err != nil {
+		s.Log.Error("Failed to update schedule", "error", err)
+		return err
+	}
+	s.mu.Lock()
+	s.Schedule = newSchedule
+	s.mu.Unlock()
+	return nil
+}
+
 func (s *SchedulesService) startScheduler() {
 	for {
 		now := time.Now()
+
 		nextRun := time.Date(now.Year(), now.Month(), now.Day(), 6, 0, 0, 0, now.Location())
-
-		if now.After(nextRun) {
-			nextRun = nextRun.Add(24 * time.Hour)
+		if !nextRun.After(now) {
+			nextRun = nextRun.AddDate(0, 0, 1)
 		}
 
-		timer := time.NewTimer(time.Until(nextRun))
-
-		<-timer.C
-		newSchedule, err := s.edupageClient.GetFullSchedule(time.Now())
-		if err == nil {
-			s.mu.Lock()
-			s.Schedule = newSchedule
-			s.mu.Unlock()
-		} else {
-			s.Log.Error("Failed to update schedule", "error", err)
-		}
+		time.Sleep(time.Until(nextRun))
+		s.Log.Info("Updating schedule...")
+		s.Update()
 	}
 }
