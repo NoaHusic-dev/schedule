@@ -1,18 +1,16 @@
 :root {
-    /* --- Simplified Color Palette --- */
-    --bg-dark: #0b0c10;         /* Deep, neutral dark background */
-    --bg-row-odd: #121418;      /* Slightly lighter for striping */
+    --bg-dark: #0b0c10;
+    --bg-row-odd: #121418;
     --bg-row-even: #0b0c10;
     
     --text-main: #ffffff;
     --text-muted: #8892b0;
     
-    --accent-blue: #3a6b9c;     /* School Brand Color (Used sparingly) */
-    --accent-cyan: #45f3ff;     /* High Visibility Accent (Time/Room) */
+    --accent-blue: #3a6b9c;
+    --accent-cyan: #45f3ff;
     
     /*--border-color: rgba(58, 107, 156, 0.2); /* Subtle blue borders */
     
-    /* Dimensions */
     --header-h: 10vh;
     --content-h: 90vh;
     /* 16 rows + 1 header row = 17 rows total */
@@ -69,9 +67,9 @@ body {
 }
 
 .clock-display {
-    font-family: 'Inter', sans-serif; /* Clean sans-serif for modern look */
+    font-family: 'Inter', sans-serif;
     font-size: 4.5vh;
-    font-weight: 800; /* Thin weight looks more modern */
+    font-weight: 800;
     color: var(--text-main);
 }
 
@@ -104,7 +102,7 @@ body {
 
 /* 1. Header Row Specifics */
 .header-row {
-    background-color: #000; /* Pure black for header to stand out */
+    background-color: #000;
     color: var(--accent-blue);
     font-size: 1.3vh;
     font-weight: 700;
@@ -127,7 +125,7 @@ body {
 .col-time {
     font-family: monospace;
     color: var(--accent-cyan);
-    font-size: 1.6vh;
+    font-size: 1.8vh;
     font-weight: 700; 
 }
 
@@ -137,7 +135,6 @@ body {
     font-weight: 700;
     color: var(--text-main);
     text-align: center;
-    font-size: 1.6vh;
 }
 
 /* 5. Subject (PREDMET) */
