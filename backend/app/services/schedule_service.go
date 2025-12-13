@@ -13,8 +13,8 @@ type SchedulesService struct {
 
 	edupageClient *internal.EdupageClient
 
-	mu       sync.RWMutex
-	Schedule internal.ScheduleResponse
+	mu              sync.RWMutex
+	CurrentSchedule internal.ScheduleResponse
 }
 
 func NewSchedulesService(c *raptor.Config) *SchedulesService {
@@ -31,7 +31,7 @@ func NewSchedulesService(c *raptor.Config) *SchedulesService {
 			return err
 		}
 
-		err = s.Update()
+		err = s.UpdateCurrent()
 		if err != nil {
 			return err
 		}
@@ -47,17 +47,17 @@ func NewSchedulesService(c *raptor.Config) *SchedulesService {
 func (s *SchedulesService) Current() internal.ScheduleResponse {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.Schedule
+	return s.CurrentSchedule
 }
 
-func (s *SchedulesService) Update() error {
-	newSchedule, err := s.edupageClient.GetFullSchedule(time.Now())
+func (s *SchedulesService) UpdateCurrent() error {
+	schedule, err := s.edupageClient.GetFullSchedule(time.Now())
 	if err != nil {
 		s.Log.Error("Failed to update schedule", "error", err)
 		return err
 	}
 	s.mu.Lock()
-	s.Schedule = newSchedule
+	s.CurrentSchedule = schedule
 	s.mu.Unlock()
 	return nil
 }
@@ -73,6 +73,6 @@ func (s *SchedulesService) startScheduler() {
 
 		time.Sleep(time.Until(nextRun))
 		s.Log.Info("Updating schedule...")
-		s.Update()
+		s.UpdateCurrent()
 	}
 }
