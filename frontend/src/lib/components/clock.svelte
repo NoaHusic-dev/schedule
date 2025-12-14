@@ -1,7 +1,7 @@
 <script lang="ts">
-
+  import { clock } from "$lib/stores/clock.svelte";
 </script>
 
 <div class="clock-display">
-  10:45:30
+  {clock.formatted}
 </div>
