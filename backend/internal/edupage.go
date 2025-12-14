@@ -21,8 +21,8 @@ type ScheduleResponse struct {
 }
 
 type ClassSchedule struct {
-	ClassName string     `json:"className"`
-	Schedule  []TimeSlot `json:"schedule"`
+	Class    string     `json:"class"`
+	Schedule []TimeSlot `json:"schedule"`
 }
 
 type TimeSlot struct {
@@ -252,7 +252,7 @@ func (e *EdupageClient) GetFullSchedule(date time.Time) (ScheduleResponse, error
 	wg.Wait()
 
 	sort.Slice(response.Classes, func(i, j int) bool {
-		return response.Classes[i].ClassName < response.Classes[j].ClassName
+		return response.Classes[i].Class < response.Classes[j].Class
 	})
 
 	return response, nil
@@ -299,7 +299,7 @@ func (e *EdupageClient) fetchRawClassTimetable(classID, dateStr string) ([]rawLe
 	return apiResp.R.TTItems, nil
 }
 
-func (e *EdupageClient) processClassLessons(className string, raw []rawLesson, baseDate time.Time) ClassSchedule {
+func (e *EdupageClient) processClassLessons(class string, raw []rawLesson, baseDate time.Time) ClassSchedule {
 	grouped := make(map[string][]LessonDetail)
 	timeKeys := make(map[string]time.Time) // Map string key to start time object
 
@@ -381,8 +381,8 @@ func (e *EdupageClient) processClassLessons(className string, raw []rawLesson, b
 	})
 
 	return ClassSchedule{
-		ClassName: className,
-		Schedule:  schedule,
+		Class:    class,
+		Schedule: schedule,
 	}
 }
 
