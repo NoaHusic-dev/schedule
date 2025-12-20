@@ -1,15 +1,15 @@
 <div class="grid-row header-row">
-  <div class="col-class">RAZ</div>
-  <div class="col-time">VRIJEME</div>
-  <div class="col-room">UČ</div>
-  <div class="col-subject">TRENUTNI PREDMET</div>
-  <div class="col-teacher">NASTAVNIK</div>
+  <div>RAZ</div>
+  <div>SAT</div>
+  <div class="header-room">UČ</div>
+  <div class="header-subject">TRENUTNI PREDMET 🛬</div>
+  <div class="header-teacher">NASTAVNIK</div>
 
-  <div class="col-divider"></div>
+  <div></div>
 
-  <div class="col-time">VRIJEME</div>
-  <div class="col-room">UČ</div>
-  <div class="col-subject">SLJEDEĆI PREDMET</div>
-  <div class="col-teacher">NASTAVNIK</div>
-  <div class="col-class right-align">RAZ</div>
+  <div>SAT</div>
+  <div class="header-room">UČ</div>
+  <div class="header-subject">SLJEDEĆI PREDMET 🛫</div>
+  <div class="header-teacher">NASTAVNIK</div>
+  <div class="right-align">RAZ</div>
 </div>
