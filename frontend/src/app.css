@@ -119,9 +119,14 @@ body {
     text-align: right;
 }
 
+.header-time {
+    text-align: center;
+}
+
 .col-time {
     font-family: monospace;
     font-weight: 700;
+    text-align: center;
 }
 
 .header-room {
