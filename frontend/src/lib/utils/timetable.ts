@@ -41,5 +41,9 @@ export function getPeriodsFromRange(startIso: string, endIso: string): string {
     return periodStart >= startMins && periodEnd <= endMins;
   });
 
+  if (activePeriods.length === 7) {
+    return "Svi sati";
+  }
+
   return activePeriods.map(p => p.id).join(',');
 }
