@@ -9,4 +9,5 @@ export interface Lesson {
     short: string;
   };
   room: string;
+  groups: string[];
 }

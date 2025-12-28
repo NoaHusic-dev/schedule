@@ -15,3 +15,10 @@ export function formatClassName(className: string): string {
     .replace(/^(\d+)\s*([a-zA-Z]+)$/, '$1. $2')
     .toUpperCase(); // Optional: ensures "1el" becomes "1.EL"
 }
+
+export function formatGroup(groups?: string[]): string {
+  if (!groups || groups.length === 0) {
+    return "";
+  }
+  return "(" + groups.join(", ") + ")";
+}
