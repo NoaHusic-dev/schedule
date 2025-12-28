@@ -1,6 +1,7 @@
 <script lang="ts">
   import Header from "$comp/ui/header.svelte";
   import ScheduleHeader from "$comp/ui/schedule-header.svelte";
+  import ScheduleFooter from "$comp/ui/schedule-footer.svelte";
   import ScheduleClass from "$comp/schedule-class.svelte";
 </script>
 
@@ -30,5 +31,7 @@
     <ScheduleClass name="2 RT" />
     <ScheduleClass name="3 RT" />
     <ScheduleClass name="4 RT" />
+
+    <ScheduleFooter />
   </main>
 </div>
