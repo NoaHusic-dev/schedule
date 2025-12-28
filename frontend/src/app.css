@@ -100,7 +100,7 @@ body {
     align-items: center;
     justify-content: center;
     height: var(--row-h);
-    font-size: 2.1vh; /* Overrides the 2vh for the footer specifically */
+    font-size: 2.1vh;
 }
 
 .col-class {
@@ -143,7 +143,6 @@ body {
     opacity: 0.5;
 }
 
-/* --- Utilities --- */
 .right-align, .header-teacher { text-align: right; }
 .center, .header-time, .header-room { text-align: center; }
 .header-subject { padding: 0 1vw; }
