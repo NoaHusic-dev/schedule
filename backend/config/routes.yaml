@@ -1,9 +1,8 @@
 routes:
   /api/v1:
-    /schedules:
-      /current:
-        GET: Schedules.Current
-      /current/update:
+    /schedules/current:
+      GET: Schedules.Current
+      /update:
         POST: Schedules.UpdateCurrent
-  /:
-    GET: SPA.Index
+
+  /: SPA.Index

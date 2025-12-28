@@ -20,6 +20,8 @@ github.com/go-raptor/raptor/v4 v4.1.1 h1:1W3yWoLAY+0zdlZAqcjgYqDLxVDu1hEVQYehmHk
 github.com/go-raptor/raptor/v4 v4.1.1/go.mod h1:GtgnnfjqYBNPBMpAr9sxRZ4iOUbFlUD2dY82jv53itM=
 github.com/go-raptor/raptor/v4 v4.1.2 h1:VbO3ZxKocMLm0M7TAaF0UKHyl211y5BtiIRPqRTVbmM=
 github.com/go-raptor/raptor/v4 v4.1.2/go.mod h1:GtgnnfjqYBNPBMpAr9sxRZ4iOUbFlUD2dY82jv53itM=
+github.com/go-raptor/raptor/v4 v4.1.4 h1:pH5hzzkUIiiIk59PRAargGx3T4v4tm2fRK9OjIVPNtA=
+github.com/go-raptor/raptor/v4 v4.1.4/go.mod h1:GtgnnfjqYBNPBMpAr9sxRZ4iOUbFlUD2dY82jv53itM=
 github.com/h00s/tint v1.1.2 h1:B1X7WeDtLpfLVLYy4SZAMa92RgmtJN9Ya2pN0C5U0l8=
 github.com/h00s/tint v1.1.2/go.mod h1:A6y/VboBZiBW7PWebkEGV5qAPGPLpTukHBfGgik+m88=
 github.com/h00s/tint v1.1.4 h1:czyWPa7komJmVsF4leNOLKHmqHv3igM3gpTb7Qx/Kbc=
