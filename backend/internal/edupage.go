@@ -32,9 +32,10 @@ type TimeSlot struct {
 }
 
 type LessonDetail struct {
-	Subject Subject `json:"subject"`
-	Teacher Teacher `json:"teacher"`
-	Room    string  `json:"room"`
+	Subject Subject  `json:"subject"`
+	Teacher Teacher  `json:"teacher"`
+	Room    string   `json:"room"`
+	Groups  []string `json:"groups"`
 }
 
 type Subject struct {
@@ -59,8 +60,6 @@ type EdupageClient struct {
 	SchoolYear int
 	Dbi        DBI
 }
-
-// --- Internal Data ---
 
 type DBI struct {
 	Subjects   map[string]DBItem `json:"subjects"`
@@ -91,6 +90,7 @@ type rawLesson struct {
 	SubjectID    string   `json:"subjectid"`
 	TeacherIDs   []string `json:"teacherids"`
 	ClassroomIDs []string `json:"classroomids"`
+	GroupNames   []string `json:"groupnames"`
 	Period       string   `json:"period"`
 	StartTime    string   `json:"starttime"`
 	EndTime      string   `json:"endtime"`
@@ -238,7 +238,6 @@ func (e *EdupageClient) GetFullSchedule(date time.Time) (ScheduleResponse, error
 				return
 			}
 
-			// Pass the requested date to correctly form time.Time
 			classSched := e.processClassLessons(cname, rawLessons, date)
 
 			if len(classSched.Schedule) > 0 {
@@ -301,7 +300,6 @@ func (e *EdupageClient) fetchRawClassTimetable(classID, dateStr string) ([]rawLe
 
 func (e *EdupageClient) processClassLessons(class string, raw []rawLesson, baseDate time.Time) ClassSchedule {
 	grouped := make(map[string][]LessonDetail)
-	timeKeys := make(map[string]time.Time) // Map string key to start time object
 
 	for _, r := range raw {
 		if r.SubjectID == "" || r.Type == "period" {
@@ -338,6 +336,15 @@ func (e *EdupageClient) processClassLessons(class string, raw []rawLesson, baseD
 			}
 		}
 
+		// Filter empty or whitespace-only group names
+		var groups []string
+		for _, g := range r.GroupNames {
+			trimmed := strings.TrimSpace(g)
+			if trimmed != "" {
+				groups = append(groups, trimmed)
+			}
+		}
+
 		startStr, endStr := r.StartTime, r.EndTime
 		if startStr == "" {
 			if p, ok := e.Dbi.Periods[r.Period]; ok {
@@ -345,26 +352,21 @@ func (e *EdupageClient) processClassLessons(class string, raw []rawLesson, baseD
 			}
 		}
 
-		// Convert HH:MM to time.Time
 		startTime := parseEduTime(startStr, baseDate)
 		endTime := parseEduTime(endStr, baseDate)
 
-		// Use a unique key for grouping lessons in the same slot
 		slotKey := fmt.Sprintf("%s|%s", startTime.Format(time.RFC3339), endTime.Format(time.RFC3339))
-		timeKeys[slotKey] = startTime
 
 		grouped[slotKey] = append(grouped[slotKey], LessonDetail{
 			Subject: subject,
 			Teacher: teacher,
 			Room:    room,
+			Groups:  groups,
 		})
 	}
 
 	var schedule []TimeSlot
 	for key, lessons := range grouped {
-		// Split key back to times or rely on stored times (requires passing End around)
-		// Simpler: re-parse key or better yet, store the Time objects in a struct map?
-		// Let's just re-parse the key which is standard format now.
 		parts := strings.Split(key, "|")
 		t1, _ := time.Parse(time.RFC3339, parts[0])
 		t2, _ := time.Parse(time.RFC3339, parts[1])
@@ -386,7 +388,6 @@ func (e *EdupageClient) processClassLessons(class string, raw []rawLesson, baseD
 	}
 }
 
-// Helper to combine "HH:MM" with the date's Year/Month/Day
 func parseEduTime(timeStr string, date time.Time) time.Time {
 	if timeStr == "" {
 		return time.Time{}
