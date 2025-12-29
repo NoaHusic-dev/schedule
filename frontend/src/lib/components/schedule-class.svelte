@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import { fade } from "svelte/transition";
   import { scheduleStore } from "$lib/stores/schedules.svelte";
   import { clock } from "$lib/stores/clock.svelte";
   import { getPeriodsFromRange } from "$util/timetable";
@@ -9,102 +9,117 @@
 
   let classData = $derived(scheduleStore.classes[name]);
   let schedule = $derived(classData?.schedule ?? []);
-  
+
+  // 5-second rotation ticker
   let tick = $state(0);
   $effect(() => {
-    const interval = setInterval(() => { tick++; }, 5000);
+    const interval = setInterval(() => {
+      tick++;
+    }, 5000);
     return () => clearInterval(interval);
   });
 
-  // 1. Helper: Formats a raw schedule entry into the shape your snippet needs
-  function formatLessonData(entry: any) {
-    if (!entry) return null;
-    
-    const lessonIdx = tick % entry.lessons.length;
-    const lesson = entry.lessons[lessonIdx];
-
-    return {
-      entry,
-      lesson,
-      // Use start time for key instead of ID to ensure uniqueness between blocks
-      transitionKey: `${entry.start}-${lesson.subject.short}-${lesson.groups?.join('')}`
-    };
-  }
-
-  // 2. Logic for CURRENT (Stays Time/Period based)
-  let current = $derived.by(() => {
+  /**
+   * Calculates exactly what to show in Current and Next slots.
+   * Updates reactively whenever the clock ticks or the 5s interval fires.
+   */
+  let displayData = $derived.by(() => {
     if (!schedule.length) return null;
 
-    const targetId = clock.currentPeriodId;
-    if (!targetId) return null;
+    const currentId = clock.currentPeriodId;
+    // If no school period is active, assume start of day or show nothing
+    if (!currentId) return null;
 
-    const entry = schedule.find(item => {
-      const periodsStr = getPeriodsFromRange(item.start, item.end);
-      if (periodsStr === "Svi sati") return true;
-      const periodIds = periodsStr.split(',').map(Number);
-      return periodIds.includes(targetId);
+    // 1. Find Current Active Lessons
+    const activeEntries = schedule.filter((item) => {
+      const periods = getPeriodsFromRange(item.start, item.end);
+      // If "All Hours", it's always active
+      if (periods === "Svi sati") return true;
+      return periods.split(",").map(Number).includes(currentId);
     });
 
-    if (!entry) return null;
+    if (activeEntries.length === 0) return null;
 
-    // Strict time check: Is it actually happening right now?
-    const now = clock.time;
-    if (now < new Date(entry.start) || now > new Date(entry.end)) {
-        return null;
+    // Flatten to handle "1 SE" split entries case
+    const currentPool = activeEntries.flatMap((entry) =>
+      entry.lessons.map((l) => ({ entry, lesson: l })),
+    );
+
+    // Pick the current lesson based on rotation
+    const curIndex = tick % currentPool.length;
+    const currentItem = currentPool[curIndex];
+
+    // Check for "Svi sati" - if true, no next lesson needed
+    const curPeriods = getPeriodsFromRange(
+      currentItem.entry.start,
+      currentItem.entry.end,
+    );
+    if (curPeriods === "Svi sati") {
+      return {
+        current: { ...currentItem, key: `${currentItem.lesson.subject.short}` },
+        next: null,
+      };
     }
 
-    return formatLessonData(entry);
-  });
+    // 2. Find Next Lesson relative to the CHOSEN Current Lesson
+    // We look for classes starting AFTER the current one ends.
+    const nextPool = schedule
+      .filter((item) => item.start >= currentItem.entry.end) // Starts after current ends
+      .sort((a, b) => a.start.localeCompare(b.start)); // Earliest first
 
-  // 3. Logic for NEXT (Array based)
-  // We simply grab the next object in the list, ensuring we skip the current block entirely.
-  let next = $derived.by(() => {
-    if (!schedule.length) return null;
+    let nextItem = null;
+    if (nextPool.length > 0) {
+      // Find the group of classes starting at the soonest time
+      const nextStartTime = nextPool[0].start;
+      const candidates = nextPool.filter((i) => i.start === nextStartTime);
 
-    // Case A: We are currently in a lesson
-    if (current?.entry) {
-      const currentIndex = schedule.indexOf(current.entry);
-      // The next distinct block is just index + 1
-      return formatLessonData(schedule[currentIndex + 1]);
+      const flattenedNext = candidates.flatMap((entry) =>
+        entry.lessons.map((l) => ({ entry, lesson: l })),
+      );
+
+      // Rotate next lesson using the same tick (synced)
+      if (flattenedNext.length > 0) {
+        nextItem = flattenedNext[tick % flattenedNext.length];
+      }
     }
 
-    // Case B: We are in a break or before school
-    // Find the first lesson that starts in the future
-    const now = clock.time;
-    const upcomingEntry = schedule.find(item => new Date(item.start) > now);
-    
-    return formatLessonData(upcomingEntry);
+    return {
+      current: {
+        ...currentItem,
+        // Key is CONTENT-based. If subject/group doesn't change, NO transition.
+        key: `${currentItem.lesson.subject.short}-${currentItem.lesson.groups?.join("")}`,
+      },
+      next: nextItem
+        ? {
+            ...nextItem,
+            key: `${nextItem.lesson.subject.short}-${nextItem.lesson.groups?.join("")}`,
+          }
+        : null,
+    };
   });
 </script>
 
 {#snippet lessonSlot(data: any)}
   {#if data}
-    <div class="col-time">{getPeriodsFromRange(data.entry.start, data.entry.end)}</div>
-    
-    <div class="col-room">
-      {#key data.transitionKey}
-        <div in:fade={{ duration: 200 }} class="lesson-inner">
-          {data.lesson.room}
-        </div>
-      {/key}
+    <div class="col-time">
+      {getPeriodsFromRange(data.entry.start, data.entry.end)}
     </div>
-    
+    <div class="col-room">{data.lesson.room}</div>
+
     <div class="col-subject">
-      {#key data.transitionKey}
-        <div in:fade={{ duration: 200 }} out:fade={{ duration: 200 }} class="lesson-inner">
-          <span class="group">{formatGroup(data.lesson.groups)}</span> 
+      {#key data.key}
+        <div
+          in:fade={{ duration: 200 }}
+          out:fade={{ duration: 200 }}
+          class="lesson-inner"
+        >
+          <span class="group">{formatGroup(data.lesson.groups)}</span>
           {data.lesson.subject.name}
         </div>
       {/key}
     </div>
 
-    <div class="col-teacher">
-      {#key data.transitionKey}
-        <div in:fade={{ duration: 200 }} out:fade={{ duration: 200 }} class="lesson-inner">
-          {data.lesson.teacher.short}
-        </div>
-      {/key}
-    </div>
+    <div class="col-teacher">{data.lesson.teacher.short}</div>
   {:else}
     <div class="col-time"></div>
     <div class="col-room"></div>
@@ -119,11 +134,11 @@
   {:else if classData}
     <div class="col-class">{formatClassName(name)}</div>
 
-    {@render lessonSlot(current)}
+    {@render lessonSlot(displayData?.current)}
 
     <div class="col-divider line"></div>
 
-    {@render lessonSlot(next)}
+    {@render lessonSlot(displayData?.next)}
 
     <div class="col-class right-align">{formatClassName(name)}</div>
   {/if}
