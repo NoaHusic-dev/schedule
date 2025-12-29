@@ -1,5 +1,5 @@
 // Define the timetable structure
-const TIMETABLE = [
+export const TIMETABLE = [
   { id: 1, start: "08:00", end: "08:45" },
   { id: 2, start: "08:50", end: "09:35" },
   { id: 3, start: "09:40", end: "10:25" },
@@ -13,7 +13,7 @@ const TIMETABLE = [
 /**
  * Converts a HH:mm string to total minutes from start of day
  */
-const timeToMinutes = (timeStr: string): number => {
+export const timeToMinutes = (timeStr: string): number => {
   const [hours, minutes] = timeStr.split(':').map(Number);
   return hours * 60 + minutes;
 };

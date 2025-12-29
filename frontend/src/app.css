@@ -124,10 +124,9 @@ body {
 .col-subject, .col-teacher {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.col-subject { padding: 0 1vw; }
+.col-subject { padding: 0 1vw; text-overflow: ellipsis; }
 
 .col-teacher {
     font-weight: 400;
