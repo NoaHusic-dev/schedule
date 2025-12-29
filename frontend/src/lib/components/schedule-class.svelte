@@ -33,8 +33,10 @@
     // 1. Find Current Active Lessons
     const activeEntries = schedule.filter((item) => {
       const periods = getPeriodsFromRange(item.start, item.end);
-      // If "All Hours", it's always active
-      if (periods === "Svi sati") return true;
+
+      // FIX: If "All Hours", show it UNLESS it is the 8th period
+      if (periods === "Svi sati") return currentId !== 8;
+
       return periods.split(",").map(Number).includes(currentId);
     });
 
