@@ -1,6 +1,7 @@
 package components
 
 import (
+	"github.com/go-raptor/controllers/spa"
 	"github.com/go-raptor/raptor/v4"
 	"github.com/h00s-go/tsd-timetable/app/controllers"
 )
@@ -8,6 +9,6 @@ import (
 func Controllers() raptor.Controllers {
 	return raptor.Controllers{
 		&controllers.SchedulesController{},
-		controllers.NewSPAController("public", "index.html"),
+		spa.NewSPAController("public", "index.html"),
 	}
 }
