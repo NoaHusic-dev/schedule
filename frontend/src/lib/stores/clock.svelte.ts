@@ -11,7 +11,7 @@ export class ClockState {
 
     setInterval(() => {
       this.tick += 1;
-    }, 5000);
+    }, 4000);
   }
 
   get formatted() {

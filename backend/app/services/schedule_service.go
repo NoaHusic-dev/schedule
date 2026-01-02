@@ -56,9 +56,12 @@ func (s *SchedulesService) UpdateCurrent() error {
 		s.Log.Error("Failed to update schedule", "error", err)
 		return err
 	}
-	s.mu.Lock()
-	s.CurrentSchedule = schedule
-	s.mu.Unlock()
+	if len(schedule.Classes) > 0 {
+		s.mu.Lock()
+		s.CurrentSchedule = schedule
+		s.mu.Unlock()
+		s.Log.Info("Schedule updated", "classes", len(schedule.Classes))
+	}
 	return nil
 }
 
@@ -66,7 +69,7 @@ func (s *SchedulesService) startScheduler() {
 	for {
 		now := time.Now()
 
-		nextRun := time.Date(now.Year(), now.Month(), now.Day(), 6, 0, 0, 0, now.Location())
+		nextRun := time.Date(now.Year(), now.Month(), now.Day(), 5, 0, 0, 0, now.Location())
 		if !nextRun.After(now) {
 			nextRun = nextRun.AddDate(0, 0, 1)
 		}

@@ -21,7 +21,7 @@ const sets = [
   ];
 
   let currentIndex = 0;
-  const ROTATION_SPEED = 25000;
+  const ROTATION_SPEED = 16000;
 
   $: currentClasses = sets[currentIndex];
 
