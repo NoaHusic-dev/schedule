@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -22,6 +23,12 @@ func NewSchedulesService(c *raptor.Config) *SchedulesService {
 
 	s.OnInit(func() error {
 		var err error
+
+		fmt.Println("Initializing SchedulesService...")
+		fmt.Println("Edupage Subdomain:", c.AppConfig["edupage_subdomain"])
+		fmt.Println("Edupage Username:", c.AppConfig["edupage_username"])
+		fmt.Println("Edupage Password:", c.AppConfig["edupage_password"])
+
 		s.edupageClient, err = internal.NewEdupageClient(
 			c.AppConfig["edupage_subdomain"],
 			c.AppConfig["edupage_username"],
