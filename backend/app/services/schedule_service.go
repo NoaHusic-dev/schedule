@@ -51,6 +51,11 @@ func (s *SchedulesService) Current() internal.ScheduleResponse {
 }
 
 func (s *SchedulesService) UpdateCurrent() error {
+	if _, err := s.edupageClient.Login(); err != nil {
+		s.Log.Error("Failed to refresh session", "error", err)
+		return err
+	}
+
 	schedule, err := s.edupageClient.GetFullSchedule(time.Now())
 	if err != nil {
 		s.Log.Error("Failed to update schedule", "error", err)

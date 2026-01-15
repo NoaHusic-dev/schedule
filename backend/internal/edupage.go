@@ -583,13 +583,6 @@ func (e *EdupageClient) parseLoginData(htmlStr string) error {
 // --- Schedule Logic ---
 
 func (e *EdupageClient) GetFullSchedule(date time.Time) (ScheduleResponse, error) {
-	if len(e.Dbi.Classes) == 0 {
-		// Attempt auto-login if classes are empty
-		if _, err := e.Login(); err != nil {
-			return ScheduleResponse{}, fmt.Errorf("auto-login failed: %w", err)
-		}
-	}
-
 	response := ScheduleResponse{
 		Classes: []ClassSchedule{},
 	}
