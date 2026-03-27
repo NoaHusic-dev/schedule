@@ -12,6 +12,8 @@ github.com/go-raptor/middlewares/logger v1.0.1 h1:4eizH+V5aJgmR9ebduAH1D96tIc+oo
 github.com/go-raptor/middlewares/logger v1.0.1/go.mod h1:jWZQZWsgruiblewDiVfBr2nuR6Sg8RTAt0I6t/j8d4g=
 github.com/go-raptor/raptor/v4 v4.1.4 h1:pH5hzzkUIiiIk59PRAargGx3T4v4tm2fRK9OjIVPNtA=
 github.com/go-raptor/raptor/v4 v4.1.4/go.mod h1:GtgnnfjqYBNPBMpAr9sxRZ4iOUbFlUD2dY82jv53itM=
+github.com/go-raptor/raptor/v4 v4.1.5 h1:icYlZIlfm28Uqyemtz+u9G2zoHpXSr/1q3nWj1wzWRs=
+github.com/go-raptor/raptor/v4 v4.1.5/go.mod h1:d6Z05zch1dw9QUPEUym5w78Yui+TeWirP/ke9Shj7UQ=
 github.com/h00s/tint v1.1.4 h1:czyWPa7komJmVsF4leNOLKHmqHv3igM3gpTb7Qx/Kbc=
 github.com/h00s/tint v1.1.4/go.mod h1:A6y/VboBZiBW7PWebkEGV5qAPGPLpTukHBfGgik+m88=
 github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=

@@ -1,13 +1,13 @@
 module github.com/h00s-go/tsd-timetable
 
-go 1.25
+go 1.26
 
 require (
 	github.com/go-logistiq/logistiq v1.0.20
 	github.com/go-raptor/controllers/spa v1.0.3
 	github.com/go-raptor/middlewares/cors v1.0.3
 	github.com/go-raptor/middlewares/logger v1.0.1
-	github.com/go-raptor/raptor/v4 v4.1.4
+	github.com/go-raptor/raptor/v4 v4.1.5
 )
 
 require (
