@@ -17,31 +17,25 @@ type SchedulesService struct {
 	CurrentSchedule internal.ScheduleResponse
 }
 
-func NewSchedulesService(c *raptor.Config) *SchedulesService {
-	s := &SchedulesService{}
+func (s *SchedulesService) Setup() error {
+	var err error
+	s.edupageClient, err = internal.NewEdupageClient(
+		s.Config.AppConfig["edupage_subdomain"],
+		s.Config.AppConfig["edupage_username"],
+		s.Config.AppConfig["edupage_password"],
+	)
+	if err != nil {
+		return err
+	}
 
-	s.OnInit(func() error {
-		var err error
-		s.edupageClient, err = internal.NewEdupageClient(
-			c.AppConfig["edupage_subdomain"],
-			c.AppConfig["edupage_username"],
-			c.AppConfig["edupage_password"],
-		)
-		if err != nil {
-			return err
-		}
+	err = s.UpdateCurrent()
+	if err != nil {
+		return err
+	}
 
-		err = s.UpdateCurrent()
-		if err != nil {
-			return err
-		}
+	go s.startScheduler()
 
-		go s.startScheduler()
-
-		return nil
-	})
-
-	return s
+	return nil
 }
 
 func (s *SchedulesService) Current() internal.ScheduleResponse {
