@@ -1,12 +1,12 @@
 module github.com/h00s-go/tsd-timetable
 
-go 1.26
+go 1.27
 
 require (
-	github.com/go-raptor/controllers/spa/v2 v2.0.0
+	github.com/go-raptor/controllers/spa/v2 v2.0.1
 	github.com/go-raptor/middlewares/cors v1.0.10
 	github.com/go-raptor/middlewares/logger v1.0.7
-	github.com/go-raptor/raptor/v4 v4.3.1
+	github.com/go-raptor/raptor/v4 v4.3.2
 	github.com/lmittmann/tint v1.2.0
 )
 
