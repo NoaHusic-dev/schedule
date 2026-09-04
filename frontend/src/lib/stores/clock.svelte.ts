@@ -11,15 +11,15 @@ export class ClockState {
 
     setInterval(() => {
       this.tick += 1;
-    }, 4000);
+    }, 2000);
   }
 
   get formatted() {
-    return this.time.toLocaleTimeString('en-US', {
+    return this.time.toLocaleTimeString("en-US", {
       hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
   }
 
@@ -29,24 +29,24 @@ export class ClockState {
 
   get currentPeriodId(): number | null {
     const m = this.totalMinutes;
-    
-    const active = TIMETABLE.find(p => {
+
+    const active = TIMETABLE.find((p) => {
       const start = timeToMinutes(p.start);
       const end = timeToMinutes(p.end);
       return m >= start && m <= end;
     });
     if (active) return active.id;
 
-    const nextPeriod = TIMETABLE.find(p => timeToMinutes(p.start) > m);
+    const nextPeriod = TIMETABLE.find((p) => timeToMinutes(p.start) > m);
     return nextPeriod ? nextPeriod.id : null;
   }
 
   get nextPeriodId(): number | null {
     const currentId = this.currentPeriodId;
     if (!currentId) return null;
-    
+
     const next = currentId + 1;
-    return TIMETABLE.some(p => p.id === next) ? next : null;
+    return TIMETABLE.some((p) => p.id === next) ? next : null;
   }
 }
 
