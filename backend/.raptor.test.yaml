@@ -1,0 +1,7 @@
+general:
+  logLevel: error
+
+app:
+  spa_optional: "true"     # tests have no frontend build
+  schedule_source: "stub"  # never reach Edupage from a test
+  update_token: "test-token"

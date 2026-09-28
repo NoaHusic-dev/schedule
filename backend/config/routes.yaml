@@ -3,6 +3,7 @@ routes:
     /schedules/current:
       GET: Schedules.Current
       /update:
-        POST: Schedules.UpdateCurrent
+        POST: Schedules.UpdateCurrent  # Authorization: Bearer <app.update_token>
+    /{path...}: Errors.NotFound        # unknown API paths stay a JSON 404 despite the SPA catch-all
 
   /: SPA.Index

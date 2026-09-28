@@ -1,15 +1,16 @@
 package components
 
 import (
-	"github.com/go-raptor/middlewares/cors"
+	"github.com/go-raptor/middlewares/csrf"
 	"github.com/go-raptor/middlewares/logger"
 	"github.com/go-raptor/raptor/v4"
-	"github.com/go-raptor/raptor/v4/core"
+	"github.com/h00s-go/tsd-timetable/app/middlewares"
 )
 
 func Middlewares() raptor.Middlewares {
 	return raptor.Middlewares{
-		core.Use(&logger.LoggerMiddleware{}),
-		core.Use(&cors.CORSMiddleware{}),
+		raptor.Use(&logger.LoggerMiddleware{}),
+		raptor.Use(&csrf.CSRFMiddleware{}),
+		raptor.UseOnly(&middlewares.UpdateTokenMiddleware{}, "Schedules.UpdateCurrent"),
 	}
 }

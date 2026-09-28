@@ -9,9 +9,6 @@ import (
 func Controllers() raptor.Controllers {
 	return raptor.Controllers{
 		&controllers.SchedulesController{},
-		spa.NewSPAController(spa.SPAConfig{
-			Directory: "public",
-			Optional:  true,
-		}),
+		&spa.SPAController{}, // serves public/; spa_optional in the dev and test configs only
 	}
 }
