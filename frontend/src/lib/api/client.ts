@@ -1,66 +1,67 @@
-import { PUBLIC_API_URL } from '$env/static/public';
+/** Raptor's error envelope: `{"code":502,"message":"…"}`. `message` is English and meant for
+ *  developers, never for the screen. */
+export interface ApiErrorBody {
+  code?: number;
+  message?: string;
+  attrs?: Record<string, unknown>;
+}
 
 export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
-    public data?: unknown
+    public body?: ApiErrorBody,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
-interface RequestOptions extends RequestInit {
-  fetch?: typeof fetch;
+export interface ApiOptions {
+  /** SvelteKit's fetch, passed in from a load. */
+  fetch?: typeof globalThis.fetch;
+  /** Query params: null and undefined entries are dropped, the rest are encoded. */
+  query?: Record<string, string | number | boolean | null | undefined>;
+  signal?: AbortSignal;
 }
 
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestOptions = {}
-): Promise<T> {
-  const { fetch: customFetch, ...fetchOptions } = options;
-  const fetchFn = customFetch || fetch;
+/** Same origin everywhere: the Go server serves the SPA in production, and Vite proxies /api in
+ *  development. So there is nothing to configure, no CORS, and no $env. */
+const BASE_URL = "/api/v1";
 
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(fetchOptions.headers as Record<string, string>),
-  };
+function buildUrl(endpoint: string, query?: ApiOptions["query"]): string {
+  const url = `${BASE_URL}${endpoint}`;
+  if (!query) return url;
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== null) params.set(key, String(value));
+  }
+  const qs = params.toString();
+  return qs ? `${url}?${qs}` : url;
+}
 
-  const response = await fetchFn(`${PUBLIC_API_URL}${endpoint}`, {
-    ...fetchOptions,
-    headers,
+async function request<T>(method: string, endpoint: string, opts: ApiOptions = {}): Promise<T> {
+  const { fetch: customFetch, query, signal } = opts;
+
+  const response = await (customFetch ?? fetch)(buildUrl(endpoint, query), {
+    method,
+    credentials: "include",
+    signal,
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new ApiError(
-      errorData.message || `API Error: ${response.statusText}`,
-      response.status,
-      errorData
-    );
+    const errorBody: ApiErrorBody = await response.json().catch(() => ({}));
+    throw new ApiError(errorBody.message ?? `Request failed (${response.status})`, response.status, errorBody);
   }
-
-  if (response.status === 204 || response.headers.get('content-length') === '0') {
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
-
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
+export const isAbortError = (e: unknown) => e instanceof DOMException && e.name === "AbortError";
+
+/** The board only reads. Add verbs here, not fetch calls elsewhere, if that ever changes. */
 export const api = {
-  get: <T>(endpoint: string, customFetch?: typeof fetch) =>
-    apiRequest<T>(endpoint, { method: 'GET', fetch: customFetch }),
-
-  post: <T>(endpoint: string, body?: unknown, customFetch?: typeof fetch) =>
-    apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(body), fetch: customFetch }),
-
-  put: <T>(endpoint: string, body?: unknown, customFetch?: typeof fetch) =>
-    apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(body), fetch: customFetch }),
-
-  patch: <T>(endpoint: string, body?: unknown, customFetch?: typeof fetch) =>
-    apiRequest<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body), fetch: customFetch }),
-
-  delete: <T = void>(endpoint: string, customFetch?: typeof fetch) =>
-    apiRequest<T>(endpoint, { method: 'DELETE', fetch: customFetch }),
+  get: <T>(endpoint: string, opts?: ApiOptions) => request<T>("GET", endpoint, opts),
 };

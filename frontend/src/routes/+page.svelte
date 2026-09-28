@@ -1,71 +1,42 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import Header from "$comp/ui/header.svelte";
-  import ScheduleHeader from "$comp/ui/schedule-header.svelte";
-  import ScheduleFooter from "$comp/ui/schedule-footer.svelte";
-  import ScheduleClass from "$comp/schedule-class.svelte";
+  import ScheduleFooter from "$lib/components/schedule-footer.svelte";
+  import ScheduleHeader from "$lib/components/schedule-header.svelte";
+  import ScheduleRow from "$lib/components/schedule-row.svelte";
+  import TopBar from "$lib/components/top-bar.svelte";
+  import { CLASS_PAGES, ROWS_PER_PAGE } from "$lib/helpers/classes";
+  import { isoDate } from "$lib/helpers/format";
+  import { clock } from "$lib/stores/clock.svelte";
+  import { schedules } from "$lib/stores/schedules.svelte";
 
-  const sets = [
-    [
-      "1 EL",
-      "2 EL",
-      "3 EL",
-      "4EL",
-      "1 MT",
-      "2 MT",
-      "3 MT",
-      "4 MT",
-      "1 PT",
-      "2 PT",
-      "3 PT",
-      "4 PT",
-      "1 RT",
-      "2 RT",
-      "3 RT",
-      "4 RT",
-    ],
-    [
-      "1 K",
-      "2 K",
-      "3 K",
-      "1 P",
-      "2 P",
-      "3 P",
-      "1 S",
-      "2 S",
-      "3 S",
-      "1 SE",
-      "2SA",
-      "2 SP",
-      "3 SP",
-      "1M",
-      "2M",
-      "3M",
-    ],
-  ];
-
-  let currentIndex = 0;
   const ROTATION_SPEED = 8000;
 
-  $: currentClasses = sets[currentIndex];
+  let pageIndex = $state(0);
+  const classes = $derived(CLASS_PAGES[pageIndex]);
+  const isToday = $derived(schedules.date === isoDate(clock.now));
 
-  onMount(() => {
+  $effect(() => clock.subscribe());
+  $effect(() => schedules.subscribe());
+
+  $effect(() => {
     const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % sets.length;
+      pageIndex = (pageIndex + 1) % CLASS_PAGES.length;
     }, ROTATION_SPEED);
-
     return () => clearInterval(interval);
   });
 </script>
 
-<div class="app-container">
-  <Header />
+<div class="flex h-full flex-col">
+  <TopBar />
 
-  <main class="grid-container">
+  <main class="flex h-[90vh] flex-col">
     <ScheduleHeader />
 
-    {#each currentClasses as className, index}
-      <ScheduleClass name={className} />
+    {#each classes as name (name)}
+      <ScheduleRow {name} {isToday} />
+    {/each}
+    <!-- A short page keeps the striping and the footer at the bottom. -->
+    {#each { length: ROWS_PER_PAGE - classes.length }, i (i)}
+      <div class="h-(--row-h) shrink-0 odd:bg-board-alt even:bg-board"></div>
     {/each}
 
     <ScheduleFooter />

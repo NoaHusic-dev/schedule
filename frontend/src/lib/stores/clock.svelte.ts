@@ -1,53 +1,39 @@
-import { TIMETABLE, timeToMinutes } from "$util/timetable";
+function createClockStore() {
+  let now = $state(new Date());
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let consumers = 0;
 
-export class ClockState {
-  time = $state(new Date());
-  tick = $state(0);
-
-  constructor() {
-    setInterval(() => {
-      this.time = new Date();
-    }, 1000);
-
-    setInterval(() => {
-      this.tick += 1;
-    }, 2000);
+  // A chained timeout aligned to the next second, so the clock never drifts or skips a digit.
+  function advance() {
+    now = new Date();
+    timer = setTimeout(advance, 1000 - (Date.now() % 1000));
   }
 
-  get formatted() {
-    return this.time.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  }
-
-  get totalMinutes() {
-    return this.time.getHours() * 60 + this.time.getMinutes();
-  }
-
-  get currentPeriodId(): number | null {
-    const m = this.totalMinutes;
-
-    const active = TIMETABLE.find((p) => {
-      const start = timeToMinutes(p.start);
-      const end = timeToMinutes(p.end);
-      return m >= start && m <= end;
-    });
-    if (active) return active.id;
-
-    const nextPeriod = TIMETABLE.find((p) => timeToMinutes(p.start) > m);
-    return nextPeriod ? nextPeriod.id : null;
-  }
-
-  get nextPeriodId(): number | null {
-    const currentId = this.currentPeriodId;
-    if (!currentId) return null;
-
-    const next = currentId + 1;
-    return TIMETABLE.some((p) => p.id === next) ? next : null;
-  }
+  return {
+    get now(): Date {
+      return now;
+    },
+    /** Minutes since midnight. */
+    get minutes(): number {
+      return now.getHours() * 60 + now.getMinutes();
+    },
+    /** Advances every 2 s; lessons held at the same time take turns on it. */
+    get tick(): number {
+      return Math.floor(now.getTime() / 2000);
+    },
+    /** `$effect(() => clock.subscribe())` keeps the clock running while a component shows it. */
+    subscribe(): () => void {
+      consumers++;
+      if (timer === null) advance();
+      return () => {
+        consumers = Math.max(0, consumers - 1);
+        if (consumers === 0 && timer !== null) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      };
+    },
+  };
 }
 
-export const clock = new ClockState();
+export const clock = createClockStore();

@@ -1,6 +1,5 @@
-import type { Classes } from "$lib/types/class";
-import { api } from "$lib/api/client.js";
+import { api } from "$lib/api/client";
+import type { Schedule } from "$lib/types/schedule";
 
-export async function fetchCurrentSchedule(customFetch?: typeof fetch) {
-  return api.get<Classes>('/schedules/current', customFetch);
-}
+export const fetchCurrentSchedule = (fetch?: typeof globalThis.fetch) =>
+  api.get<Schedule>("/schedules/current", { fetch });

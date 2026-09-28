@@ -1,0 +1,35 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+/* The board is sized in vh so the same layout fills any TV. */
+@theme {
+  --font-sans: "Inter Variable", sans-serif;
+
+  --color-board: #01004c; /* background and even rows */
+  --color-board-alt: #295c93; /* odd rows */
+  --color-accent: #eab602; /* header and footer bars, rooms, class names */
+  --color-muted: #3a6b9c; /* subtitle */
+
+  --text-brand: 2.8vh;
+  --text-subtitle: 1.4vh;
+  --text-clock: 4.5vh;
+  --text-head: 2vh;
+  --text-row: 2.1vh;
+}
+
+:root {
+  /* class | period, room, subject, teacher (now) | divider | period, room, subject, teacher (next) | class */
+  --board-cols: 0.5fr 1.2fr 0.6fr 3fr 1.5fr 12px 1.2fr 0.6fr 3fr 1.5fr 0.5fr;
+  /* 16 class rows, a header and a footer in 90vh, with a row's worth of slack */
+  --row-h: calc(90vh / 18);
+}
+
+@layer base {
+  body {
+    @apply bg-board font-sans text-white;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    line-height: normal;
+  }
+}
