@@ -7,3 +7,9 @@ export function isoDate(date: Date): string {
 export function formatClock(date: Date): string {
   return date.toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
+
+/** "Utorak, 29. rujna". */
+export function formatDate(date: Date): string {
+  const text = date.toLocaleDateString("hr-HR", { weekday: "long", day: "numeric", month: "long" });
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

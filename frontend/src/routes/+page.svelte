@@ -26,7 +26,7 @@
 </script>
 
 <div class="flex h-full flex-col">
-  <TopBar />
+  <TopBar {isToday} />
 
   <main class="flex h-[90vh] flex-col">
     <ScheduleHeader />
@@ -39,6 +39,6 @@
       <div class="h-(--row-h) shrink-0 odd:bg-board-alt even:bg-board"></div>
     {/each}
 
-    <ScheduleFooter />
+    <ScheduleFooter page={pageIndex} pages={CLASS_PAGES.length} rotation={ROTATION_SPEED} />
   </main>
 </div>

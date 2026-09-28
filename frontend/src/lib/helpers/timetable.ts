@@ -22,28 +22,24 @@ export const timeToMinutes = (timeStr: string): number => {
 };
 
 /**
- * The periods a time range covers, as "1,2", or ALL_DAY for a seven-period block.
+ * The periods a time range covers. A period counts only when it lies entirely inside the range.
  * @param startIso ISO date string, e.g. 2025-12-22T08:00:00+01:00
  */
-export function getPeriodsFromRange(startIso: string, endIso: string): string {
+export function periodIds(startIso: string, endIso: string): number[] {
   const startDate = new Date(startIso);
   const endDate = new Date(endIso);
 
   const startMins = startDate.getHours() * 60 + startDate.getMinutes();
   const endMins = endDate.getHours() * 60 + endDate.getMinutes();
 
-  // A period counts only when it lies entirely inside the range.
-  const activePeriods = TIMETABLE.filter((period) => {
-    const periodStart = timeToMinutes(period.start);
-    const periodEnd = timeToMinutes(period.end);
-    return periodStart >= startMins && periodEnd <= endMins;
-  });
+  return TIMETABLE.filter((p) => timeToMinutes(p.start) >= startMins && timeToMinutes(p.end) <= endMins).map((p) => p.id);
+}
 
-  if (activePeriods.length === 7) {
-    return ALL_DAY;
-  }
-
-  return activePeriods.map((p) => p.id).join(",");
+/** "3", or "1–3" for consecutive periods (they always are), or ALL_DAY for a seven-period block. */
+export function formatPeriods(ids: number[]): string {
+  if (ids.length === 7) return ALL_DAY;
+  if (ids.length > 1) return `${ids[0]}–${ids[ids.length - 1]}`;
+  return ids.join("");
 }
 
 /** The period in progress, or during a break the one about to start; null after the last period. */
@@ -78,16 +74,16 @@ export function slotsFor(schedule: TimeSlot[], periodId: number | null, tick: nu
   if (!periodId) return null;
 
   const activeEntries = schedule.filter((item) => {
-    const periods = getPeriodsFromRange(item.start, item.end);
-    if (periods === ALL_DAY) return periodId !== 8;
-    return periods.split(",").map(Number).includes(periodId);
+    const ids = periodIds(item.start, item.end);
+    if (ids.length === 7) return periodId !== 8;
+    return ids.includes(periodId);
   });
   if (activeEntries.length === 0) return null;
 
   const currentPool = activeEntries.flatMap((slot) => slot.lessons.map((lesson) => ({ slot, lesson })));
   const currentItem = currentPool[tick % currentPool.length];
 
-  if (getPeriodsFromRange(currentItem.slot.start, currentItem.slot.end) === ALL_DAY) {
+  if (periodIds(currentItem.slot.start, currentItem.slot.end).length === 7) {
     return { current: { ...currentItem, key: currentItem.lesson.subject.short }, next: null };
   }
 
@@ -109,5 +105,48 @@ export function slotsFor(schedule: TimeSlot[], periodId: number | null, tick: nu
   return {
     current: { ...currentItem, key: lessonKey(currentItem.lesson) },
     next: nextItem ? { ...nextItem, key: lessonKey(nextItem.lesson) } : null,
+  };
+}
+
+/** The top bar's line: what is happening now, with a progress fraction for lessons and breaks. */
+export interface PeriodStatus {
+  title: string;
+  detail: string;
+  progress: number | null;
+}
+
+/**
+ * @param hasToday whether the server's timetable is for today's date. Without it a weekend has no
+ *   lessons, while on a weekday a holiday and a failed refresh look the same, so say only that the
+ *   timetable isn't available.
+ */
+export function periodStatus(now: Date, hasToday: boolean): PeriodStatus {
+  if (!hasToday) {
+    const weekend = now.getDay() === 0 || now.getDay() === 6;
+    return { title: weekend ? "Nema nastave danas" : "Raspored nije dostupan", detail: "", progress: null };
+  }
+
+  const minutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const active = TIMETABLE.find((p) => minutes >= timeToMinutes(p.start) && minutes < timeToMinutes(p.end));
+  if (active) {
+    const start = timeToMinutes(active.start);
+    const end = timeToMinutes(active.end);
+    return {
+      title: `${active.id}. sat`,
+      detail: `još ${Math.ceil(end - minutes)} min`,
+      progress: (minutes - start) / (end - start),
+    };
+  }
+
+  const next = TIMETABLE.find((p) => timeToMinutes(p.start) > minutes);
+  if (!next) return { title: "Nastava je završila", detail: "", progress: null };
+  if (next.id === 1) return { title: "Nastava počinje", detail: `u ${next.start}`, progress: null };
+
+  const breakStart = timeToMinutes(TIMETABLE[next.id - 2].end);
+  const breakEnd = timeToMinutes(next.start);
+  return {
+    title: "Odmor",
+    detail: `${next.id}. sat u ${next.start}`,
+    progress: (minutes - breakStart) / (breakEnd - breakStart),
   };
 }

@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import type { Lesson, TimeSlot } from "$lib/types/schedule";
-import { currentPeriodId, getPeriodsFromRange, slotsFor, timeToMinutes } from "./timetable";
+import { currentPeriodId, formatPeriods, periodIds, periodStatus, slotsFor, timeToMinutes } from "./timetable";
 
 process.env.TZ = "Europe/Zagreb";
 
@@ -24,15 +24,20 @@ describe("timeToMinutes", () => {
   });
 });
 
-describe("getPeriodsFromRange", () => {
-  test("one period", () => expect(getPeriodsFromRange(at("08:00"), at("08:45"))).toBe("1"));
-  test("a double period", () => expect(getPeriodsFromRange(at("08:00"), at("09:35"))).toBe("1,2"));
-  test("seven periods read as the whole day", () =>
-    expect(getPeriodsFromRange(at("08:00"), at("13:55"))).toBe("Svi sati"));
-  test("all eight periods are listed", () =>
-    expect(getPeriodsFromRange(at("08:00"), at("14:45"))).toBe("1,2,3,4,5,6,7,8"));
-  test("a range covering no whole period is empty", () =>
-    expect(getPeriodsFromRange(at("08:10"), at("08:40"))).toBe(""));
+describe("periodIds", () => {
+  test("one period", () => expect(periodIds(at("08:00"), at("08:45"))).toEqual([1]));
+  test("a double period", () => expect(periodIds(at("08:00"), at("09:35"))).toEqual([1, 2]));
+  test("the whole day", () => expect(periodIds(at("08:00"), at("14:45"))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]));
+  test("a range covering no whole period", () => expect(periodIds(at("08:10"), at("08:40"))).toEqual([]));
+});
+
+describe("formatPeriods", () => {
+  test("one period", () => expect(formatPeriods([3])).toBe("3"));
+  test("consecutive periods read as a range", () => expect(formatPeriods([1, 2, 3])).toBe("1–3"));
+  test("seven periods read as the whole day", () => expect(formatPeriods([1, 2, 3, 4, 5, 6, 7])).toBe("Svi sati"));
+  test("all eight periods are a range, so the column never overflows", () =>
+    expect(formatPeriods([1, 2, 3, 4, 5, 6, 7, 8])).toBe("1–8"));
+  test("no periods", () => expect(formatPeriods([])).toBe(""));
 });
 
 describe("currentPeriodId", () => {
@@ -93,5 +98,48 @@ describe("slotsFor", () => {
     expect(row.current.key).toBe("SP");
     expect(row.next).toBeNull();
     expect(slotsFor(practice, 8, 0)).toBeNull();
+  });
+});
+
+describe("periodStatus", () => {
+  // 2026-09-28 is a Monday.
+  const monday = (time: string) => new Date(`2026-09-28T${time}+02:00`);
+
+  test("during a lesson it counts down and shows progress", () => {
+    const status = periodStatus(monday("10:00:00"), true);
+    expect(status).toEqual({ title: "3. sat", detail: "još 25 min", progress: 20 / 45 });
+  });
+
+  test("the countdown rounds up, so the last minute reads 1 min", () => {
+    expect(periodStatus(monday("10:24:30"), true).detail).toBe("još 1 min");
+  });
+
+  test("a break names the coming period and its start", () => {
+    const status = periodStatus(monday("10:30:00"), true);
+    expect(status.title).toBe("Odmor");
+    expect(status.detail).toBe("4. sat u 10:40");
+    expect(status.progress).toBeCloseTo(5 / 15);
+  });
+
+  test("a lesson ends exactly at its end time", () => {
+    expect(periodStatus(monday("10:25:00"), true).title).toBe("Odmor");
+  });
+
+  test("before school", () => {
+    expect(periodStatus(monday("07:45:00"), true)).toEqual({ title: "Nastava počinje", detail: "u 08:00", progress: null });
+  });
+
+  test("after school", () => {
+    expect(periodStatus(monday("15:10:00"), true)).toEqual({ title: "Nastava je završila", detail: "", progress: null });
+  });
+
+  test("no timetable on a weekend means no lessons", () => {
+    const saturday = new Date("2026-10-03T10:00:00+02:00");
+    expect(periodStatus(saturday, false)).toEqual({ title: "Nema nastave danas", detail: "", progress: null });
+  });
+
+  // A holiday and a failed refresh look the same from here; this wording is true for both.
+  test("no timetable on a weekday says it isn't available", () => {
+    expect(periodStatus(monday("10:00:00"), false)).toEqual({ title: "Raspored nije dostupan", detail: "", progress: null });
   });
 });

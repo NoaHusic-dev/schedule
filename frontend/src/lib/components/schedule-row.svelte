@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { formatClassName, formatGroup } from "$lib/helpers/classes";
-  import { currentPeriodId, getPeriodsFromRange, slotsFor, type SlotView } from "$lib/helpers/timetable";
+  import { currentPeriodId, formatPeriods, periodIds, slotsFor, type SlotView } from "$lib/helpers/timetable";
   import { clock } from "$lib/stores/clock.svelte";
   import { schedules } from "$lib/stores/schedules.svelte";
 
@@ -21,21 +21,21 @@
 
 {#snippet lessonSlot(data: SlotView | null | undefined)}
   {#if data}
-    <div class="text-center font-mono font-bold">{getPeriodsFromRange(data.slot.start, data.slot.end)}</div>
-    <div class="rounded bg-accent text-center font-bold text-black">
+    <div class="text-center font-bold whitespace-nowrap tabular-nums">{formatPeriods(periodIds(data.slot.start, data.slot.end))}</div>
+    <div class="overflow-hidden rounded bg-room text-center font-bold whitespace-nowrap text-white">
       {#key data.key}
         <div in:fade={{ duration: 200 }}>{data.lesson.room}</div>
       {/key}
     </div>
-    <div class="overflow-hidden px-[1vw] text-ellipsis whitespace-nowrap">
+    <div class="overflow-hidden px-[1vw]">
       {#key data.key}
-        <div in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>
-          <span>{formatGroup(data.lesson.groups)}</span>
+        <div class="truncate" in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>
+          {#if data.lesson.groups?.length}<span class="text-group">{formatGroup(data.lesson.groups)}</span>{/if}
           {data.lesson.subject.name}
         </div>
       {/key}
     </div>
-    <div class="mr-[1em] overflow-hidden text-right font-normal whitespace-nowrap opacity-50">
+    <div class="mr-[1em] overflow-hidden text-right font-normal whitespace-nowrap text-teacher">
       {#key data.key}
         <div in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>{data.lesson.teacher.short}</div>
       {/key}
@@ -58,7 +58,7 @@
 
     {@render lessonSlot(row?.current)}
 
-    <div class="h-full w-0.5 bg-accent opacity-50"></div>
+    <div class="h-full w-0.5 bg-line"></div>
 
     {@render lessonSlot(row?.next)}
 

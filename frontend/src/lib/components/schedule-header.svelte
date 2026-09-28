@@ -1,5 +1,5 @@
 <div
-  class="grid h-(--row-h) w-full grid-cols-(--board-cols) items-center bg-accent px-[1vw] text-head font-bold tracking-[0.05em] text-black uppercase"
+  class="grid h-(--row-h) w-full grid-cols-(--board-cols) items-center bg-bar px-[1vw] text-head font-bold tracking-[0.05em] text-accent uppercase"
 >
   <div>Raz</div>
   <div class="text-center">Sat</div>

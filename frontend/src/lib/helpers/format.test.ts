@@ -1,6 +1,6 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
-import { formatClock, isoDate } from "./format";
+import { formatClock, formatDate, isoDate } from "./format";
 
 describe("isoDate", () => {
   test("is the local calendar date, zero-padded", () => {
@@ -13,5 +13,11 @@ describe("formatClock", () => {
   test("is 24-hour HH:mm:ss", () => {
     expect(formatClock(new Date(2026, 8, 28, 9, 5, 7))).toBe("09:05:07");
     expect(formatClock(new Date(2026, 8, 28, 14, 45, 0))).toBe("14:45:00");
+  });
+});
+
+describe("formatDate", () => {
+  test("is the Croatian weekday and date, capitalized", () => {
+    expect(formatDate(new Date(2026, 8, 29))).toBe("Utorak, 29. rujna");
   });
 });

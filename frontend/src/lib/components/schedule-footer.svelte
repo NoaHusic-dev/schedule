@@ -1,12 +1,18 @@
 <script lang="ts">
-  type Props = { text?: string; speed?: string };
-  let { text = "Dobrodošli u Tehničku školu Daruvar!", speed = "20s" }: Props = $props();
+  import RotationIndicator from "$lib/components/rotation-indicator.svelte";
+
+  type Props = { page: number; pages: number; rotation: number; text?: string; speed?: string };
+  let { page, pages, rotation, text = "Dobrodošli u Tehničku školu Daruvar!", speed = "20s" }: Props = $props();
 </script>
 
 <div
-  class="relative flex h-(--row-h) w-full items-center overflow-hidden bg-accent text-row font-bold tracking-[0.05em] text-black uppercase"
+  class="flex h-(--row-h) w-full items-stretch overflow-hidden bg-bar text-row font-bold tracking-[0.05em] text-accent uppercase"
 >
-  <div class="marquee absolute whitespace-nowrap" style:--duration={speed}>{text}</div>
+  <RotationIndicator {page} {pages} duration={rotation} />
+
+  <div class="relative flex flex-1 items-center overflow-hidden">
+    <div class="marquee absolute whitespace-nowrap" style:--duration={speed}>{text}</div>
+  </div>
 </div>
 
 <style>
