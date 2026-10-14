@@ -67,6 +67,9 @@
   --board-height: 90vh;
   --board-rows: 18;
   --row-h: calc(var(--board-height) / var(--board-rows));
+
+  /* Širina obojene trake smjera na lijevom rubu retka; zaglavlje ima jednako široku prozirnu */
+  --row-stripe: 0.7vh;
 }
 
 /* ==========================================================================
@@ -124,10 +127,10 @@
     background-color: var(--color-board-alt);
   }
 
-  /* Oznaka učionice */
+  /* Oznaka učionice; uski bočni razmak da "Lab 3" stane u stupac */
   .room-badge {
     display: inline-block;
-    padding: 0.2em 0.7em;
+    padding: 0.2em 0.2em;
     border-radius: 0.4em;
     background-color: var(--color-room);
     color: #fff;
@@ -181,7 +184,7 @@
 @layer components {
   /* Redak s ulaznom animacijom; --i određuje odgodu (stagger) */
   .board-row {
-    border-left: 0.7vh solid var(--dep, var(--color-accent));
+    border-left: var(--row-stripe) solid var(--dep, var(--color-accent));
     animation: var(--animate-row-in);
     animation-delay: calc(var(--i, 0) * 45ms);
   }
@@ -202,4 +205,9 @@
   /* Traka s obavijestima na dnu */
   .ticker { overflow: hidden; white-space: nowrap; }
   .ticker > * { display: inline-block; padding-left: 100%; animation: var(--animate-ticker); }
+
+  /* Bez pokreta tekst stoji: inače bi ostao izvan vidnog polja, desno od trake */
+  @media (prefers-reduced-motion: reduce) {
+    .ticker > * { padding-left: 0; }
+  }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { formatClassName, formatGroup } from "$lib/helpers/classes";
+  import { departmentColor, formatClassName, formatGroup } from "$lib/helpers/classes";
   import { currentPeriodId, formatPeriods, periodIds, slotsFor, type SlotView } from "$lib/helpers/timetable";
   import { clock } from "$lib/stores/clock.svelte";
   import { schedules } from "$lib/stores/schedules.svelte";
@@ -10,8 +10,10 @@
     /** False when the server's schedule is for another day: then the row shows no lessons rather
      *  than another day's as current. */
     isToday: boolean;
+    /** The row's place on the page, which staggers its entrance. */
+    index: number;
   };
-  let { name, isToday }: Props = $props();
+  let { name, isToday, index }: Props = $props();
 
   const classData = $derived(schedules.get(name));
   const row = $derived(
@@ -22,22 +24,22 @@
 {#snippet lessonSlot(data: SlotView | null | undefined)}
   {#if data}
     <div class="text-center font-bold whitespace-nowrap tabular-nums">{formatPeriods(periodIds(data.slot.start, data.slot.end))}</div>
-    <div class="overflow-hidden rounded bg-room text-center font-bold whitespace-nowrap text-white">
+    <div class="room-badge">
       {#key data.key}
-        <div in:fade={{ duration: 200 }}>{data.lesson.room}</div>
+        <div class="board-ellipsis" in:fade={{ duration: 200 }}>{data.lesson.room}</div>
       {/key}
     </div>
     <div class="overflow-hidden px-[1vw]">
       {#key data.key}
-        <div class="truncate" in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>
+        <div class="board-ellipsis" in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>
           {#if data.lesson.groups?.length}<span class="text-group">{formatGroup(data.lesson.groups)}</span>{/if}
           {data.lesson.subject.name}
         </div>
       {/key}
     </div>
-    <div class="mr-[1em] overflow-hidden text-right font-normal whitespace-nowrap text-teacher">
+    <div class="mr-[1em] overflow-hidden text-right font-normal text-teacher">
       {#key data.key}
-        <div in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>{data.lesson.teacher.short}</div>
+        <div class="board-ellipsis" in:fade={{ duration: 200 }} out:fade={{ duration: 200 }}>{data.lesson.teacher.short}</div>
       {/key}
     </div>
   {:else}
@@ -48,9 +50,8 @@
   {/if}
 {/snippet}
 
-<div
-  class="grid h-(--row-h) w-full grid-cols-(--board-cols) items-center px-[1vw] text-row odd:bg-board-alt even:bg-board"
->
+<!-- An empty row keeps a plain stripe: there is no class name beside it to explain the colour. -->
+<div class="board-row px-[1vw]" style:--i={index} style:--dep={classData ? departmentColor(name) : "transparent"}>
   {#if !schedules.loaded}
     <div>...</div>
   {:else if classData}

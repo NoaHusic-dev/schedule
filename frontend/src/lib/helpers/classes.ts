@@ -18,6 +18,21 @@ export function formatClassName(className: string): string {
     .toUpperCase();
 }
 
+/** Departments with their own colour in layout.css (--color-dep-*), keyed by the class name's letters. */
+const DEPARTMENT_COLORS: Readonly<Record<string, string>> = {
+  EL: "var(--color-dep-el)",
+  MT: "var(--color-dep-mt)",
+  PT: "var(--color-dep-pt)",
+  RT: "var(--color-dep-rt)",
+  SP: "var(--color-dep-sp)",
+};
+
+/** The colour of a class's row stripe: "1 EL" gets EL's. Undefined leaves the board's accent. */
+export function departmentColor(className: string): string | undefined {
+  const letters = className.trim().match(/^\d+\s*([a-zA-Z]+)$/)?.[1];
+  return letters ? DEPARTMENT_COLORS[letters.toUpperCase()] : undefined;
+}
+
 export function formatGroup(groups?: string[]): string {
   if (!groups || groups.length === 0) {
     return "";

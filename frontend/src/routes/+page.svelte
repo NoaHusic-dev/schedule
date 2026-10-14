@@ -31,12 +31,12 @@
   <main class="flex h-[90vh] flex-col">
     <ScheduleHeader />
 
-    {#each classes as name (name)}
-      <ScheduleRow {name} {isToday} />
+    {#each classes as name, i (name)}
+      <ScheduleRow {name} {isToday} index={i} />
     {/each}
     <!-- A short page keeps the striping and the footer at the bottom. -->
     {#each { length: ROWS_PER_PAGE - classes.length }, i (i)}
-      <div class="h-(--row-h) shrink-0 odd:bg-board-alt even:bg-board"></div>
+      <div class="board-row shrink-0" style:--i={classes.length + i} style:--dep="transparent"></div>
     {/each}
 
     <ScheduleFooter page={pageIndex} pages={CLASS_PAGES.length} rotation={ROTATION_SPEED} />

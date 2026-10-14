@@ -10,23 +10,9 @@
 >
   <RotationIndicator {page} {pages} duration={rotation} />
 
-  <div class="relative flex flex-1 items-center overflow-hidden">
-    <div class="marquee absolute whitespace-nowrap" style:--duration={speed}>{text}</div>
+  <!-- speed overrides .ticker's own 50s pass, keeping the pace the board had -->
+  <div class="ticker flex-1 self-center">
+    <div style:animation-duration={speed}>{text}</div>
   </div>
 </div>
 
-<style>
-  .marquee {
-    will-change: transform;
-    animation: scroll-linear var(--duration) linear infinite;
-  }
-
-  @keyframes scroll-linear {
-    from {
-      transform: translateX(100vw);
-    }
-    to {
-      transform: translateX(-100%);
-    }
-  }
-</style>
