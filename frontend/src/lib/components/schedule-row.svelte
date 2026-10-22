@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { departmentColor, formatClassName, formatGroup } from "$lib/helpers/classes";
+  import { formatClassName, formatGroup } from "$lib/helpers/classes";
   import { currentPeriodId, formatPeriods, periodIds, slotsFor, type SlotView } from "$lib/helpers/timetable";
   import { clock } from "$lib/stores/clock.svelte";
   import { schedules } from "$lib/stores/schedules.svelte";
@@ -50,12 +50,12 @@
   {/if}
 {/snippet}
 
-<!-- An empty row keeps a plain stripe: there is no class name beside it to explain the colour. -->
-<div class="board-row px-[1vw]" style:--i={index} style:--dep={classData ? departmentColor(name) : "transparent"}>
+<!-- The class badge takes its colour from the end of `name` (RT, EL, ...) via layout.css, so it needs no per-row style. -->
+<div class="board-row px-[1vw]" style:--i={index}>
   {#if !schedules.loaded}
     <div>...</div>
   {:else if classData}
-    <div class="font-bold text-accent">{formatClassName(name)}</div>
+    <div class="class-badge" data-razred={name}>{formatClassName(name)}</div>
 
     {@render lessonSlot(row?.current)}
 
@@ -63,6 +63,6 @@
 
     {@render lessonSlot(row?.next)}
 
-    <div class="font-bold text-right text-accent">{formatClassName(name)}</div>
+    <div class="class-badge justify-self-end" data-razred={name}>{formatClassName(name)}</div>
   {/if}
 </div>

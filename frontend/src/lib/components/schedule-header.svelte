@@ -1,6 +1,5 @@
-<!-- The transparent left border matches the rows' stripe, so the columns line up. -->
 <div
-  class="grid h-(--row-h) w-full grid-cols-(--board-cols) items-center border-l-(length:--row-stripe) border-transparent bg-bar px-[1vw] text-head font-bold tracking-[0.05em] text-accent uppercase"
+  class="grid h-(--row-h) w-full grid-cols-(--board-cols) items-center bg-bar px-[1vw] text-head font-bold tracking-[0.05em] text-accent uppercase"
 >
   <div>Raz</div>
   <div class="text-center">Sat</div>
