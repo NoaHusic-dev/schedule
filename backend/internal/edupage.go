@@ -85,14 +85,32 @@ type DBI struct {
 	Periods    map[string]DBItem `json:"periods"`
 }
 
+// FlexString accepts both JSON strings and numbers, since Edupage
+// sometimes sends ids as bare numbers (e.g. "id":-12).
+type FlexString string
+
+func (f *FlexString) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err == nil {
+		*f = FlexString(s)
+		return nil
+	}
+	var n json.Number
+	if err := json.Unmarshal(b, &n); err != nil {
+		return err
+	}
+	*f = FlexString(n.String())
+	return nil
+}
+
 type DBItem struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Short     string `json:"short"`
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	StartTime string `json:"starttime"`
-	EndTime   string `json:"endtime"`
+	ID        FlexString `json:"id"`
+	Name      string     `json:"name"`
+	Short     string     `json:"short"`
+	Firstname string     `json:"firstname"`
+	Lastname  string     `json:"lastname"`
+	StartTime string     `json:"starttime"`
+	EndTime   string     `json:"endtime"`
 }
 
 // --- Controllers ---
