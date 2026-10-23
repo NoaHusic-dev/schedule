@@ -150,12 +150,14 @@
 @theme {
   --color-school: #7285bb; /* plava iz školskog loga */
 
-  /* Boje smjerova (ispuna oznake razreda, npr. "2.RT") */
-  --color-dep-rt: #5aa9ff;
-  --color-dep-el: #f5b942;
-  --color-dep-pt: #4fd1a1;
-  --color-dep-mt: #b794f6;
+  /* Boje smjerova (ispuna oznake razreda): K, P, S, SE, SA, SP, M */
+  --color-dep-k: #5aa9ff;
+  --color-dep-p: #4fd1a1;
+  --color-dep-s: #f5b942;
+  --color-dep-se: #b794f6;
+  --color-dep-sa: #f472b6;
   --color-dep-sp: #ff8a8a;
+  --color-dep-m: #a3e635;
 
   /* Statusi: zamjena, odmor, odpada */
   --color-warn: #f5b942;
@@ -186,11 +188,11 @@
   }
 
   /* Oznaka razreda: cijeli kontejner je u boji smjera.
-     Boja se bira iz kraja naziva (RT, EL, MT, PT, SP), bez obzira na godinu,
-     velika/mala slova ili stranicu, pa ne ovisi o JavaScriptu.
-     HTML: <b class="class-badge" data-razred="3.RT">3.RT</b> */
+     Boja se bira iz točne oznake smjera u data-smjer (K, P, S, SE, SA, SP, M),
+     pa ne ovisi o godini ni o stranici. Nepoznat smjer ostaje siv.
+     HTML: <b class="class-badge" data-smjer="SP">3. SP</b> */
   .class-badge {
-    --dep: var(--color-accent); /* zadano, ako smjer nije prepoznat */
+    --dep: var(--color-teacher); /* zadano: smjer nije prepoznat */
     display: inline-block;
     justify-self: start; /* u gridu: oznaka ne puni cijeli stupac */
     max-width: 100%;
@@ -202,11 +204,13 @@
     text-align: center;
     white-space: nowrap;
   }
-  .class-badge[data-razred$="RT" i] { --dep: var(--color-dep-rt); }
-  .class-badge[data-razred$="EL" i] { --dep: var(--color-dep-el); }
-  .class-badge[data-razred$="MT" i] { --dep: var(--color-dep-mt); }
-  .class-badge[data-razred$="PT" i] { --dep: var(--color-dep-pt); }
-  .class-badge[data-razred$="SP" i] { --dep: var(--color-dep-sp); }
+  .class-badge[data-smjer="K" i] { --dep: var(--color-dep-k); }
+  .class-badge[data-smjer="P" i] { --dep: var(--color-dep-p); }
+  .class-badge[data-smjer="S" i] { --dep: var(--color-dep-s); }
+  .class-badge[data-smjer="SE" i] { --dep: var(--color-dep-se); }
+  .class-badge[data-smjer="SA" i] { --dep: var(--color-dep-sa); }
+  .class-badge[data-smjer="SP" i] { --dep: var(--color-dep-sp); }
+  .class-badge[data-smjer="M" i] { --dep: var(--color-dep-m); }
 
   .tag-substitution,
   .tag-cancelled {

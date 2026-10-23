@@ -15,6 +15,9 @@
   };
   let { name, isToday, index }: Props = $props();
 
+  // "1. K", "3.SP" or "2SE" -> "K", "SP", "SE": the exact programme code, which picks the badge colour.
+  const smjer = $derived(name.replace(/^\s*\d+\s*\.?\s*/, "").trim().toUpperCase());
+
   const classData = $derived(schedules.get(name));
   const row = $derived(
     isToday && classData ? slotsFor(classData.schedule, currentPeriodId(clock.minutes), clock.tick) : null,
@@ -50,12 +53,12 @@
   {/if}
 {/snippet}
 
-<!-- The class badge takes its colour from the end of `name` (RT, EL, ...) via layout.css, so it needs no per-row style. -->
+<!-- The badge colour comes from data-smjer via layout.css, so it needs no per-row style. -->
 <div class="board-row px-[1vw]" style:--i={index}>
   {#if !schedules.loaded}
     <div>...</div>
   {:else if classData}
-    <div class="class-badge" data-razred={name}>{formatClassName(name)}</div>
+    <div class="class-badge" data-smjer={smjer}>{formatClassName(name)}</div>
 
     {@render lessonSlot(row?.current)}
 
@@ -63,6 +66,6 @@
 
     {@render lessonSlot(row?.next)}
 
-    <div class="class-badge justify-self-end" data-razred={name}>{formatClassName(name)}</div>
+    <div class="class-badge justify-self-end" data-smjer={smjer}>{formatClassName(name)}</div>
   {/if}
 </div>
