@@ -17,6 +17,8 @@
 
   // "1. K", "3.SP" or "2SE" -> "K", "SP", "SE": the exact programme code, which picks the badge colour.
   const smjer = $derived(name.replace(/^\s*\d+\s*\.?\s*/, "").trim().toUpperCase());
+  // A code that layout.css does not know still gets its own stable colour, so no badge is left grey.
+  const hue = $derived([...smjer].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % 360);
 
   const classData = $derived(schedules.get(name));
   const row = $derived(
@@ -58,7 +60,7 @@
   {#if !schedules.loaded}
     <div>...</div>
   {:else if classData}
-    <div class="class-badge" data-smjer={smjer}>{formatClassName(name)}</div>
+    <div class="class-badge" data-smjer={smjer} style:--dep-auto="hsl({hue} 70% 72%)">{formatClassName(name)}</div>
 
     {@render lessonSlot(row?.current)}
 
@@ -66,6 +68,6 @@
 
     {@render lessonSlot(row?.next)}
 
-    <div class="class-badge justify-self-end" data-smjer={smjer}>{formatClassName(name)}</div>
+    <div class="class-badge justify-self-end" data-smjer={smjer} style:--dep-auto="hsl({hue} 70% 72%)">{formatClassName(name)}</div>
   {/if}
 </div>
