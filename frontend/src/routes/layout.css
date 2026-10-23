@@ -150,7 +150,11 @@
 @theme {
   --color-school: #7285bb; /* plava iz školskog loga */
 
-  /* Boje smjerova (ispuna oznake razreda): K, P, S, SE, SA, SP, M */
+  /* Boje smjerova (ispuna oznake razreda): RT, EL, MT, PT, K, P, S, SE, SA, SP, M */
+  --color-dep-rt: #5aa9ff;
+  --color-dep-el: #f5b942;
+  --color-dep-mt: #b794f6;
+  --color-dep-pt: #4fd1a1;
   --color-dep-k: #5aa9ff;
   --color-dep-p: #4fd1a1;
   --color-dep-s: #f5b942;
@@ -188,11 +192,11 @@
   }
 
   /* Oznaka razreda: cijeli kontejner je u boji smjera.
-     Boja se bira iz točne oznake smjera u data-smjer (K, P, S, SE, SA, SP, M),
-     pa ne ovisi o godini ni o stranici. Nepoznat smjer ostaje siv.
+     Boja se bira iz točne oznake smjera u data-smjer (RT, EL, MT, PT, K, P, S, SE, SA, SP, M),
+     pa ne ovisi o godini ni o stranici. Nepoznat smjer dobiva stabilnu boju iz --dep-auto.
      HTML: <b class="class-badge" data-smjer="SP">3. SP</b> */
   .class-badge {
-    --dep: var(--color-teacher); /* zadano: smjer nije prepoznat */
+    --dep: var(--dep-auto, var(--color-teacher)); /* nepoznat smjer: boja iz --dep-auto, inače siva */
     display: inline-block;
     justify-self: start; /* u gridu: oznaka ne puni cijeli stupac */
     max-width: 100%;
@@ -204,6 +208,10 @@
     text-align: center;
     white-space: nowrap;
   }
+  .class-badge[data-smjer="RT" i] { --dep: var(--color-dep-rt); }
+  .class-badge[data-smjer="EL" i] { --dep: var(--color-dep-el); }
+  .class-badge[data-smjer="MT" i] { --dep: var(--color-dep-mt); }
+  .class-badge[data-smjer="PT" i] { --dep: var(--color-dep-pt); }
   .class-badge[data-smjer="K" i] { --dep: var(--color-dep-k); }
   .class-badge[data-smjer="P" i] { --dep: var(--color-dep-p); }
   .class-badge[data-smjer="S" i] { --dep: var(--color-dep-s); }
