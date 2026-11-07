@@ -4,12 +4,12 @@
   type Props = { page: number; pages: number; rotation: number; text?: string; speed?: string };
 
   const MESSAGES = [
-    "Dobrodošli u Tehničku školu Daruvar",
-    "Znatiželja, upornost i točnost",
-    "Znanje koje danas steknete sutra pokreće strojeve, mreže i ideje",
-    "Nema glupih pitanja – nastavnici su tu zbog vas",
-    "Mali koraci svaki dan vode do velikih rezultata",
-    "Ugodan dan u školi i puno uspjeha na satu!",
+    "Znanje počinje dobrim pitanjem.",
+    "Pogreška nije neuspjeh — nego dio učenja.",
+    "Vještina nastaje kad znanje pretvoriš u praksu.",
+    "Ne moraš znati sve. Važno je znati kako doći do odgovora.",
+    "Svaki stručnjak jednom je bio početnik.",
+    "Riješi problem korak po korak.",
   ];
   const SEPARATOR = "\u00a0\u00a0✦\u00a0\u00a0";
 

@@ -2,6 +2,7 @@
   import logo from "$lib/assets/tsd-logo-dark.png";
   import Clock from "$lib/components/clock.svelte";
   import PeriodStatus from "$lib/components/period-status.svelte";
+  import Weather from "$lib/components/weather.svelte";
 
   let { isToday }: { isToday: boolean } = $props();
 </script>
@@ -18,7 +19,8 @@
 
   <PeriodStatus {isToday} />
 
-  <div class="justify-self-end">
+  <div class="flex items-center gap-[1.25vw] justify-self-end">
+    <Weather />
     <Clock />
   </div>
 </header>
