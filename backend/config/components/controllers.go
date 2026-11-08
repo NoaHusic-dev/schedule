@@ -9,6 +9,7 @@ import (
 func Controllers() raptor.Controllers {
 	return raptor.Controllers{
 		&controllers.SchedulesController{},
+		&controllers.WeatherController{},
 		&spa.SPAController{}, // serves public/; spa_optional in the dev and test configs only
 	}
 }

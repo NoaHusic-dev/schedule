@@ -107,39 +107,72 @@ describe("periodStatus", () => {
 
   test("during a lesson it counts down and shows progress", () => {
     const status = periodStatus(monday("10:00:00"), true);
-    expect(status).toEqual({ title: "3. sat", detail: "još 25 min", progress: 20 / 45 });
+    expect(status).toEqual({ title: "3. sat", detail: "još 25 min", progress: 20 / 45, bigBreak: false });
   });
 
   test("the countdown rounds up, so the last minute reads 1 min", () => {
     expect(periodStatus(monday("10:24:30"), true).detail).toBe("još 1 min");
   });
 
-  test("a break names the coming period and its start", () => {
+  test("the long break has a neon title and counts down to the next period", () => {
     const status = periodStatus(monday("10:30:00"), true);
-    expect(status.title).toBe("Odmor");
-    expect(status.detail).toBe("4. sat u 10:40");
+    expect(status.title).toBe("Veliki odmor");
+    expect(status.detail).toBe("10:00");
     expect(status.progress).toBeCloseTo(5 / 15);
+    expect(status.bigBreak).toBe(true);
+  });
+
+  test("the long-break countdown updates each second without floating-point rounding up", () => {
+    expect(periodStatus(monday("10:30:01"), true).detail).toBe("9:59");
+    expect(periodStatus(monday("10:39:59"), true).detail).toBe("0:01");
+  });
+
+  test("a short break keeps its usual status", () => {
+    const status = periodStatus(monday("11:27:00"), true);
+    expect(status.title).toBe("Odmor");
+    expect(status.detail).toBe("5. sat u 11:30");
+    expect(status.bigBreak).toBe(false);
   });
 
   test("a lesson ends exactly at its end time", () => {
-    expect(periodStatus(monday("10:25:00"), true).title).toBe("Odmor");
+    expect(periodStatus(monday("10:25:00"), true).title).toBe("Veliki odmor");
   });
 
   test("before school", () => {
-    expect(periodStatus(monday("07:45:00"), true)).toEqual({ title: "Nastava počinje", detail: "u 08:00", progress: null });
+    expect(periodStatus(monday("07:45:00"), true)).toEqual({
+      title: "Nastava počinje",
+      detail: "u 08:00",
+      progress: null,
+      bigBreak: false,
+    });
   });
 
   test("after school", () => {
-    expect(periodStatus(monday("15:10:00"), true)).toEqual({ title: "Nastava je završila", detail: "", progress: null });
+    expect(periodStatus(monday("15:10:00"), true)).toEqual({
+      title: "Nastava je završila",
+      detail: "",
+      progress: null,
+      bigBreak: false,
+    });
   });
 
   test("no timetable on a weekend means no lessons", () => {
     const saturday = new Date("2026-10-03T10:00:00+02:00");
-    expect(periodStatus(saturday, false)).toEqual({ title: "Nema nastave danas", detail: "", progress: null });
+    expect(periodStatus(saturday, false)).toEqual({
+      title: "Nema nastave danas",
+      detail: "",
+      progress: null,
+      bigBreak: false,
+    });
   });
 
   // A holiday and a failed refresh look the same from here; this wording is true for both.
   test("no timetable on a weekday says it isn't available", () => {
-    expect(periodStatus(monday("10:00:00"), false)).toEqual({ title: "Raspored nije dostupan", detail: "", progress: null });
+    expect(periodStatus(monday("10:00:00"), false)).toEqual({
+      title: "Raspored nije dostupan",
+      detail: "",
+      progress: null,
+      bigBreak: false,
+    });
   });
 });

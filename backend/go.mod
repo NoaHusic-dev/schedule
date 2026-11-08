@@ -7,6 +7,7 @@ require (
 	github.com/go-raptor/middlewares/csrf v1.1.0
 	github.com/go-raptor/middlewares/logger v1.4.0
 	github.com/go-raptor/raptor/v4 v4.6.1
+	github.com/h00s/goopenmeteo v1.1.0
 	github.com/lmittmann/tint v1.2.1
 )
 

@@ -113,6 +113,7 @@ export interface PeriodStatus {
   title: string;
   detail: string;
   progress: number | null;
+  bigBreak: boolean;
 }
 
 /**
@@ -123,7 +124,7 @@ export interface PeriodStatus {
 export function periodStatus(now: Date, hasToday: boolean): PeriodStatus {
   if (!hasToday) {
     const weekend = now.getDay() === 0 || now.getDay() === 6;
-    return { title: weekend ? "Nema nastave danas" : "Raspored nije dostupan", detail: "", progress: null };
+    return { title: weekend ? "Nema nastave danas" : "Raspored nije dostupan", detail: "", progress: null, bigBreak: false };
   }
 
   const minutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
@@ -135,18 +136,26 @@ export function periodStatus(now: Date, hasToday: boolean): PeriodStatus {
       title: `${active.id}. sat`,
       detail: `još ${Math.ceil(end - minutes)} min`,
       progress: (minutes - start) / (end - start),
+      bigBreak: false,
     };
   }
 
   const next = TIMETABLE.find((p) => timeToMinutes(p.start) > minutes);
-  if (!next) return { title: "Nastava je završila", detail: "", progress: null };
-  if (next.id === 1) return { title: "Nastava počinje", detail: `u ${next.start}`, progress: null };
+  if (!next) return { title: "Nastava je završila", detail: "", progress: null, bigBreak: false };
+  if (next.id === 1) return { title: "Nastava počinje", detail: `u ${next.start}`, progress: null, bigBreak: false };
 
   const breakStart = timeToMinutes(TIMETABLE[next.id - 2].end);
   const breakEnd = timeToMinutes(next.start);
+  const bigBreak = next.id === 4;
+  const secondsSinceMidnight =
+    now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
+  const secondsRemaining = Math.ceil(breakEnd * 60 - secondsSinceMidnight);
   return {
-    title: "Odmor",
-    detail: `${next.id}. sat u ${next.start}`,
+    title: bigBreak ? "Veliki odmor" : "Odmor",
+    detail: bigBreak
+      ? `${Math.floor(secondsRemaining / 60)}:${String(secondsRemaining % 60).padStart(2, "0")}`
+      : `${next.id}. sat u ${next.start}`,
     progress: (minutes - breakStart) / (breakEnd - breakStart),
+    bigBreak,
   };
 }

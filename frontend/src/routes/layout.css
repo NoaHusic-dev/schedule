@@ -245,7 +245,7 @@
 
 /* ==========================================================================
    Veliki odmor: neon, valovi, zrake, odbrojavanje
-   Uključi klasom .is-big-break na <body> (čestice i konfeti crta JavaScript).
+   Stanje velikog odmora uključuje se klasom .is-big-break na <body>.
    ========================================================================== */
 
 @theme {
@@ -276,14 +276,36 @@
   .is-big-break .board-row:nth-child(odd) { background-color: rgb(21 26 32 / 0.6); }
 
   /* Neonski naslov i odbrojavanje u zaglavlju */
-  .neon-title { color: #8ff6ff; letter-spacing: 0.04em; text-shadow: 0 0 1vh var(--color-neon-cyan), 0 0 2.4vh var(--color-neon-cyan); animation: break-neon 2.2s ease-in-out infinite; }
-  .break-countdown { font-size: 4vh; font-weight: 700; line-height: 1.1; color: #fff; text-shadow: 0 0 1.6vh rgb(56 232 255 / 0.75); }
+  .is-big-break .neon-title { color: #8ff6ff; letter-spacing: 0.04em; text-shadow: 0 0 1vh var(--color-neon-cyan), 0 0 2.4vh var(--color-neon-cyan); animation: break-neon 2.2s ease-in-out infinite; }
+  .is-big-break .break-countdown { font-size: 4vh; font-weight: 700; line-height: 1.1; color: #fff; text-shadow: 0 0 1.6vh rgb(56 232 255 / 0.75); }
 
   /* Kratki svjetlosni bljesak (dodaj .go na početku i pri kraju odmora) */
   .break-flash { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 25%, rgb(255 255 255 / 0.5), rgb(56 232 255 / 0.18) 40%, transparent 70%); }
   .break-flash.go { animation: break-flash 1s ease-out; }
 
   @media (prefers-reduced-motion: reduce) {
-    .break-rays, .break-wave, .neon-title { animation: none; }
+    .break-rays, .break-wave, .neon-title, .is-big-break .neon-title { animation: none; }
+  }
+
+  .break-wave {
+    bottom: 0;
+    height: 24vh;
+    fill: none;
+    stroke-width: 4;
+    filter: drop-shadow(0 0 1.2vh currentColor);
+  }
+  .break-wave-cyan { color: var(--color-neon-cyan); stroke: currentColor; }
+  .break-wave-pink {
+    bottom: 2vh;
+    height: 17vh;
+    color: var(--color-neon-pink);
+    stroke: currentColor;
+    opacity: 0.65;
+    animation-delay: -8s;
+  }
+  .is-big-break .break-progress { background: rgb(56 232 255 / 0.22); }
+  .is-big-break .break-progress-fill {
+    background: var(--color-neon-cyan);
+    box-shadow: 0 0 1.2vh var(--color-neon-cyan);
   }
 }

@@ -5,6 +5,7 @@
   import TopBar from "$lib/components/top-bar.svelte";
   import { CLASS_PAGES, ROWS_PER_PAGE } from "$lib/helpers/classes";
   import { isoDate } from "$lib/helpers/format";
+  import { periodStatus } from "$lib/helpers/timetable";
   import { clock } from "$lib/stores/clock.svelte";
   import { schedules } from "$lib/stores/schedules.svelte";
 
@@ -13,6 +14,7 @@
   let pageIndex = $state(0);
   const classes = $derived(CLASS_PAGES[pageIndex]);
   const isToday = $derived(schedules.date === isoDate(clock.now));
+  const isBigBreak = $derived(periodStatus(clock.now, isToday).bigBreak);
 
   $effect(() => clock.subscribe());
   $effect(() => schedules.subscribe());
@@ -25,7 +27,17 @@
   });
 </script>
 
-<div class="flex h-full flex-col">
+<div class="relative isolate flex h-full flex-col">
+  <div class="break-layer" aria-hidden="true">
+    <div class="break-rays"></div>
+    <svg class="break-wave break-wave-cyan" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0 160 C240 40 480 280 720 160 S1200 40 1440 160 S1920 280 2160 160 S2640 40 2880 160" />
+    </svg>
+    <svg class="break-wave break-wave-pink" viewBox="0 0 2880 320" preserveAspectRatio="none">
+      <path d="M0 160 C240 280 480 40 720 160 S1200 280 1440 160 S1920 40 2160 160 S2640 280 2880 160" />
+    </svg>
+    <div class="break-flash" class:go={isBigBreak}></div>
+  </div>
   <TopBar {isToday} />
 
   <main class="flex h-[90vh] flex-col">

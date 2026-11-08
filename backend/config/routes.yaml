@@ -4,6 +4,8 @@ routes:
       GET: Schedules.Current
       /update:
         POST: Schedules.UpdateCurrent  # Authorization: Bearer <app.update_token>
+    /weather/current:
+      GET: Weather.Current
     /{path...}: Errors.NotFound        # unknown API paths stay a JSON 404 despite the SPA catch-all
 
   /: SPA.Index
