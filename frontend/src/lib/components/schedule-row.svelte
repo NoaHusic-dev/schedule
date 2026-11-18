@@ -1,9 +1,9 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import { formatClassName, formatGroup } from "$lib/helpers/classes";
-  import { currentPeriodId, formatPeriods, periodIds, slotsFor, type SlotView } from "$lib/helpers/timetable";
-  import { clock } from "$lib/stores/clock.svelte";
-  import { schedules } from "$lib/stores/schedules.svelte";
+  import { formatClassName, formatGroup } from "#lib/helpers/classes.ts";
+  import { currentPeriodId, formatPeriods, periodIds, slotsFor, type SlotView } from "#lib/helpers/timetable.ts";
+  import { clock } from "#lib/stores/clock.svelte.ts";
+  import { schedules } from "#lib/stores/schedules.svelte.ts";
 
   type Props = {
     name: string;

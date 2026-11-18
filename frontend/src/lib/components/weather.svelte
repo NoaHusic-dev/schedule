@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { weather } from "$lib/stores/weather.svelte";
+  import { weather } from "#lib/stores/weather.svelte.ts";
 
   $effect(() => weather.subscribe());
 

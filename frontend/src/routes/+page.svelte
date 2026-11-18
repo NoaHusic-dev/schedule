@@ -1,13 +1,13 @@
 <script lang="ts">
-  import ScheduleFooter from "$lib/components/schedule-footer.svelte";
-  import ScheduleHeader from "$lib/components/schedule-header.svelte";
-  import ScheduleRow from "$lib/components/schedule-row.svelte";
-  import TopBar from "$lib/components/top-bar.svelte";
-  import { CLASS_PAGES, ROWS_PER_PAGE } from "$lib/helpers/classes";
-  import { isoDate } from "$lib/helpers/format";
-  import { periodStatus } from "$lib/helpers/timetable";
-  import { clock } from "$lib/stores/clock.svelte";
-  import { schedules } from "$lib/stores/schedules.svelte";
+  import ScheduleFooter from "#lib/components/schedule-footer.svelte";
+  import ScheduleHeader from "#lib/components/schedule-header.svelte";
+  import ScheduleRow from "#lib/components/schedule-row.svelte";
+  import TopBar from "#lib/components/top-bar.svelte";
+  import { CLASS_PAGES, ROWS_PER_PAGE } from "#lib/helpers/classes.ts";
+  import { isoDate } from "#lib/helpers/format.ts";
+  import { periodStatus } from "#lib/helpers/timetable.ts";
+  import { clock } from "#lib/stores/clock.svelte.ts";
+  import { schedules } from "#lib/stores/schedules.svelte.ts";
 
   const ROTATION_SPEED = 8000;
 

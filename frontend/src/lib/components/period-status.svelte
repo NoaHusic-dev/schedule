@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { periodStatus } from "$lib/helpers/timetable";
-  import { clock } from "$lib/stores/clock.svelte";
+  import { periodStatus } from "#lib/helpers/timetable.ts";
+  import { clock } from "#lib/stores/clock.svelte.ts";
 
   let { isToday }: { isToday: boolean } = $props();
 

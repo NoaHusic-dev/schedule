@@ -1,5 +1,5 @@
-import { fetchCurrentWeather } from "$lib/services/weather";
-import type { CurrentWeather } from "$lib/types/weather";
+import { fetchCurrentWeather } from "#lib/services/weather.ts";
+import type { CurrentWeather } from "#lib/types/weather.ts";
 
 const POLL_INTERVAL = 10 * 60 * 1000;
 const POLL_ERROR = 60 * 1000;

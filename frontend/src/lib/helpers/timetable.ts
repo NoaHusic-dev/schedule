@@ -1,4 +1,4 @@
-import type { Lesson, TimeSlot } from "$lib/types/schedule";
+import type { Lesson, TimeSlot } from "#lib/types/schedule.ts";
 
 /** The school's bell schedule. */
 export const TIMETABLE = [

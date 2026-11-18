@@ -1,5 +1,5 @@
 <script lang="ts">
-  import RotationIndicator from "$lib/components/rotation-indicator.svelte";
+  import RotationIndicator from "#lib/components/rotation-indicator.svelte";
 
   type Props = { page: number; pages: number; rotation: number; text?: string; speed?: string };
 

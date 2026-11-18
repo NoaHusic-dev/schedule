@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { formatClock, formatDate } from "$lib/helpers/format";
-  import { clock } from "$lib/stores/clock.svelte";
+  import { formatClock, formatDate } from "#lib/helpers/format.ts";
+  import { clock } from "#lib/stores/clock.svelte.ts";
 </script>
 
 <div class="text-right">

@@ -1,6 +1,6 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
-import type { Lesson, TimeSlot } from "$lib/types/schedule";
+import type { Lesson, TimeSlot } from "#lib/types/schedule.ts";
 import { currentPeriodId, formatPeriods, periodIds, periodStatus, slotsFor, timeToMinutes } from "./timetable";
 
 process.env.TZ = "Europe/Zagreb";

@@ -1,6 +1,6 @@
-import { isoDate } from "$lib/helpers/format";
-import { fetchCurrentSchedule } from "$lib/services/schedules";
-import type { ClassSchedule } from "$lib/types/schedule";
+import { isoDate } from "#lib/helpers/format.ts";
+import { fetchCurrentSchedule } from "#lib/services/schedules.ts";
+import type { ClassSchedule } from "#lib/types/schedule.ts";
 
 const POLL_TODAY = 60 * 60 * 1000; // the server refreshes once a day, at 05:00
 const POLL_STALE = 5 * 60 * 1000; // waiting for today's timetable: a weekend, or a refresh that failed

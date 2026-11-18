@@ -1,8 +1,8 @@
 <script lang="ts">
-  import logo from "$lib/assets/tsd-logo-dark.png";
-  import Clock from "$lib/components/clock.svelte";
-  import PeriodStatus from "$lib/components/period-status.svelte";
-  import Weather from "$lib/components/weather.svelte";
+  import logo from "#lib/assets/tsd-logo-dark.png";
+  import Clock from "#lib/components/clock.svelte";
+  import PeriodStatus from "#lib/components/period-status.svelte";
+  import Weather from "#lib/components/weather.svelte";
 
   let { isToday }: { isToday: boolean } = $props();
 </script>
