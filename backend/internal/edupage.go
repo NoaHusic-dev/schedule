@@ -169,7 +169,7 @@ func NewEdupageClient(subdomain, username, password string) (*EdupageClient, err
 	}, nil
 }
 
-func (e *EdupageClient) Login() (interface{}, error) {
+func (e *EdupageClient) Login() (any, error) {
 	return e.loginInternal(nil)
 }
 
@@ -201,7 +201,7 @@ func (e *EdupageClient) ReloadData(subdomain, sessionID, username string) error 
 	return e.parseLoginData(string(bodyBytes))
 }
 
-func (e *EdupageClient) loginInternal(captchaData map[string]string) (interface{}, error) {
+func (e *EdupageClient) loginInternal(captchaData map[string]string) (any, error) {
 	requestURL := fmt.Sprintf("https://%s.edupage.org/login/?cmd=MainLogin", e.Subdomain)
 	resp, err := e.Client.Get(requestURL)
 	if err != nil {
@@ -324,7 +324,7 @@ func (e *EdupageClient) handleCaptchaPage(htmlContent, pageURL string) (*Captcha
 	}, ErrCaptchaNeeded
 }
 
-func (cc *CaptchaController) Submit(answer string) (interface{}, error) {
+func (cc *CaptchaController) Submit(answer string) (any, error) {
 	data := map[string]string{
 		cc.inputName: answer,
 	}
@@ -341,7 +341,7 @@ func (tf *TwoFactorController) IsConfirmed() (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	var res map[string]interface{}
+	var res map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return false, err
 	}
@@ -413,7 +413,7 @@ func (tf *TwoFactorController) finishLegacy(code string) error {
 func (tf *TwoFactorController) finishEQ(code string) error {
 	reqURL := fmt.Sprintf("https://%s.edupage.org/login/twofactor?akcia=checkIfConfirmed", tf.client.Subdomain)
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"t2fasec":  code,
 		"2fNoSave": "y",
 		"2fform":   "1",
@@ -438,7 +438,7 @@ func (tf *TwoFactorController) finishEQ(code string) error {
 	}
 	defer resp.Body.Close()
 
-	var res map[string]interface{}
+	var res map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return fmt.Errorf("invalid response json: %w", err)
 	}
@@ -470,7 +470,7 @@ func (tf *TwoFactorController) reloadAfterTwoFactor() error {
 
 // --- Helper Functions ---
 
-func buildEqPayload(params map[string]interface{}) (map[string]string, error) {
+func buildEqPayload(params map[string]any) (map[string]string, error) {
 	rpcPayloadBytes, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
@@ -505,7 +505,7 @@ func buildEqPayload(params map[string]interface{}) (map[string]string, error) {
 }
 
 func extractCsrfToken(html string) string {
-	var dummy map[string]interface{}
+	var dummy map[string]any
 	if err := json.Unmarshal([]byte(html), &dummy); err == nil {
 		if val, ok := dummy["csrftoken"].(string); ok {
 			return val
@@ -565,8 +565,8 @@ func (e *EdupageClient) parseLoginData(htmlStr string) error {
 	jsonRaw = strings.ReplaceAll(jsonRaw, "\r", "")
 
 	var data struct {
-		DP  interface{} `json:"dp"`
-		DBI DBI         `json:"dbi"`
+		DP  any `json:"dp"`
+		DBI DBI `json:"dbi"`
 	}
 	if err := json.Unmarshal([]byte(jsonRaw), &data); err != nil {
 		return fmt.Errorf("json parse error in userhome: %w", err)
@@ -574,7 +574,7 @@ func (e *EdupageClient) parseLoginData(htmlStr string) error {
 
 	// 1. Extract School Year
 	e.SchoolYear = 0
-	if dpMap, ok := data.DP.(map[string]interface{}); ok {
+	if dpMap, ok := data.DP.(map[string]any); ok {
 		if year, ok := dpMap["year"].(float64); ok {
 			e.SchoolYear = int(year)
 		}
@@ -644,10 +644,10 @@ func (e *EdupageClient) GetFullSchedule(date time.Time) (ScheduleResponse, error
 func (e *EdupageClient) fetchRawClassTimetable(classID, dateStr string) ([]rawLesson, error) {
 	endpoint := fmt.Sprintf("https://%s.edupage.org/timetable/server/currenttt.js?__func=curentttGetData", e.Subdomain)
 
-	payload := map[string]interface{}{
-		"__args": []interface{}{
+	payload := map[string]any{
+		"__args": []any{
 			nil,
-			map[string]interface{}{
+			map[string]any{
 				"year":       e.SchoolYear,
 				"datefrom":   dateStr,
 				"dateto":     dateStr,

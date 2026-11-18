@@ -1,4 +1,8 @@
 routes:
+  /healthz:
+    GET: Health.Live
+  /readyz:
+    GET: Health.Ready
   /api/v1:
     /schedules/current:
       GET: Schedules.Current
