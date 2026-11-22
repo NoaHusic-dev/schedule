@@ -1,311 +1,40 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter";
 
-/* ==========================================================================
-   Digitalni raspored sati: tablo u školskoj plavoj
-   --------------------------------------------------------------------------
-   Sve je dimenzionirano u vh jedinicama pa se raspored uklapa u bilo koji TV.
-   Omjeri kontrasta navedeni su u odnosu na pozadinu tabla (--color-board).
-   ========================================================================== */
-
 @theme {
-  /* ---- Tipografija ---- */
   --font-sans: "Inter Variable", system-ui, sans-serif;
-
-  /* ---- Boje: podloge ---- */
-  --color-board: #0b0d10; /* pozadina i parni redovi */
-  --color-board-alt: #151a20; /* neparni redovi */
-  --color-bar: #1b2129; /* zaglavlje stupaca i podnožje */
-  --color-bar-alt: #232a33; /* indikator stranice */
-  --color-line: #2b323b; /* razdjelnik i trake napretka */
-
-  /* ---- Boje: tekst ---- */
-  --color-ink: #f3f4f6; /* predmeti, sat (17:1) */
-  --color-accent: #5aa9ff; /* razredi, oznake stupaca, status (7.9:1) */
-  --color-group: #9ccbff; /* oznake grupa, npr. "(A)" */
-  --color-teacher: #a3acb8; /* nastavnici (7.4:1 na neparnim redovima) */
-  --color-muted: #8a94a1; /* podnaslov i datum (6.2:1) */
-
-  /* ---- Boje: oznake ---- */
-  --color-room: #1f6fe0; /* oznaka učionice, bijeli tekst (4.8:1) */
-
-  /* ---- Veličine teksta (vh, minimum 1.6vh radi čitljivosti s udaljenosti) ---- */
-  --text-brand: 2.8vh; /* naziv škole */
-  --text-subtitle: 1.6vh;
-  --text-status: 3.3vh; /* npr. "Trenutni sat" */
-  --text-status-detail: 2.4vh;
-  --text-clock: 4.5vh;
-  --text-date: 1.7vh;
-  --text-head: 2vh; /* zaglavlja stupaca */
-  --text-row: 2.1vh; /* redovi rasporeda */
-
-  /* ---- Animacija trake napretka ---- */
-  --animate-fill: fill var(--fill-duration, 8s) linear forwards;
-
-  @keyframes fill {
-    from {
-      width: 0%;
-    }
-    to {
-      width: 100%;
-    }
-  }
 }
-
-/* ==========================================================================
-   Raspored tabla
-   ========================================================================== */
-
-:root {
-  /* Stupci:
-     razred | sat, učionica, predmet, nastavnik (sada) | razdjelnik |
-     sat, učionica, predmet, nastavnik (sljedeće) | razred */
-  --board-cols: 0.5fr 1.2fr 0.6fr 3fr 1.5fr 12px 1.2fr 0.6fr 3fr 1.5fr 0.5fr;
-
-  /* Visina tabla: 90vh podijeljeno na 18 redaka
-     (zaglavlje + 16 razrednih redaka + podnožje) */
-  --board-height: 90vh;
-  --board-rows: 18;
-  --row-h: calc(var(--board-height) / var(--board-rows));
-}
-
-/* ==========================================================================
-   Osnovni stilovi
-   ========================================================================== */
 
 @layer base {
   html {
-    -webkit-text-size-adjust: 100%;
+    min-width: 320px;
+    background: #f4f6fb;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-board font-sans text-ink;
-    height: 100vh;
-    height: 100dvh;
-    width: 100vw;
-    overflow: hidden;
-    line-height: normal;
-
-    /* Tablica na TV-u: bez kursora i bez odabira teksta */
-    cursor: none;
-    user-select: none;
-
-    /* Brojke iste širine da sat i sati ne "poskakuju" */
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    color: #202c41;
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
+    line-height: 1.5;
   }
 
-  /* Poštuj postavku smanjenog kretanja */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
     }
-  }
-}
-
-/* ==========================================================================
-   Pomoćne komponente (neobavezno, koristi ih ako ti odgovaraju)
-   ========================================================================== */
-
-@layer components {
-  /* Jedan redak rasporeda s naizmjeničnim bojama */
-  .board-row {
-    display: grid;
-    grid-template-columns: var(--board-cols);
-    align-items: center;
-    height: var(--row-h);
-    font-size: var(--text-row);
-    background-color: var(--color-board);
-  }
-
-  .board-row:nth-child(odd) {
-    background-color: var(--color-board-alt);
-  }
-
-  /* Oznaka učionice; uski bočni razmak da "Lab 3" stane u stupac */
-  .room-badge {
-    display: inline-block;
-    padding: 0.2em 0.2em;
-    border-radius: 0.4em;
-    background-color: var(--color-room);
-    color: #fff;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  /* Dugi nazivi predmeta/nastavnika ne smiju razbiti redak */
-  .board-ellipsis {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
-/* ==========================================================================
-   Dodatno: smjerovi, statusi i pokret
-   ========================================================================== */
-
-@theme {
-  --color-school: #7285bb; /* plava iz školskog loga */
-
-  /* Boje smjerova (ispuna oznake razreda): RT, EL, MT, PT, K, P, S, SE, SA, SP, M */
-  --color-dep-rt: #5aa9ff;
-  --color-dep-el: #f5b942;
-  --color-dep-mt: #b794f6;
-  --color-dep-pt: #4fd1a1;
-  --color-dep-k: #5aa9ff;
-  --color-dep-p: #4fd1a1;
-  --color-dep-s: #f5b942;
-  --color-dep-se: #b794f6;
-  --color-dep-sa: #f472b6;
-  --color-dep-sp: #ff8a8a;
-  --color-dep-m: #a3e635;
-
-  /* Statusi: zamjena, odmor, odpada */
-  --color-warn: #f5b942;
-  --color-danger: #ff8a8a;
-
-  /* Pokret */
-  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-row-in: row-in 0.55s var(--ease-out-soft) both;
-  --animate-glow: glow 2s ease-in-out infinite;
-  --animate-ticker: ticker 50s linear infinite;
-
-  @keyframes row-in {
-    from { opacity: 0; transform: translateY(1.5vh); }
-  }
-  @keyframes glow {
-    50% { box-shadow: 0 0 1.4vh var(--color-warn); }
-  }
-  @keyframes ticker {
-    to { transform: translateX(-100%); }
-  }
-}
-
-@layer components {
-  /* Redak s ulaznom animacijom; --i određuje odgodu (stagger) */
-  .board-row {
-    animation: var(--animate-row-in);
-    animation-delay: calc(var(--i, 0) * 45ms);
-  }
-
-  /* Oznaka razreda: cijeli kontejner je u boji smjera.
-     Boja se bira iz točne oznake smjera u data-smjer (RT, EL, MT, PT, K, P, S, SE, SA, SP, M),
-     pa ne ovisi o godini ni o stranici. Nepoznat smjer dobiva stabilnu boju iz --dep-auto.
-     HTML: <b class="class-badge" data-smjer="SP">3. SP</b> */
-  .class-badge {
-    --dep: var(--dep-auto, var(--color-teacher)); /* nepoznat smjer: boja iz --dep-auto, inače siva */
-    display: inline-block;
-    justify-self: start; /* u gridu: oznaka ne puni cijeli stupac */
-    max-width: 100%;
-    padding: 0.2em 0.55em;
-    border-radius: 0.5em;
-    background-color: var(--dep);
-    color: var(--color-board); /* tamni tekst na svijetloj ispuni (min. 7:1) */
-    font-weight: 700;
-    text-align: center;
-    white-space: nowrap;
-  }
-  .class-badge[data-smjer="RT" i] { --dep: var(--color-dep-rt); }
-  .class-badge[data-smjer="EL" i] { --dep: var(--color-dep-el); }
-  .class-badge[data-smjer="MT" i] { --dep: var(--color-dep-mt); }
-  .class-badge[data-smjer="PT" i] { --dep: var(--color-dep-pt); }
-  .class-badge[data-smjer="K" i] { --dep: var(--color-dep-k); }
-  .class-badge[data-smjer="P" i] { --dep: var(--color-dep-p); }
-  .class-badge[data-smjer="S" i] { --dep: var(--color-dep-s); }
-  .class-badge[data-smjer="SE" i] { --dep: var(--color-dep-se); }
-  .class-badge[data-smjer="SA" i] { --dep: var(--color-dep-sa); }
-  .class-badge[data-smjer="SP" i] { --dep: var(--color-dep-sp); }
-  .class-badge[data-smjer="M" i] { --dep: var(--color-dep-m); }
-
-  .tag-substitution,
-  .tag-cancelled {
-    display: inline-block;
-    padding: 0.1em 0.5em;
-    border-radius: 0.3em;
-    font-size: 1.6vh;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: #111;
-  }
-  .tag-substitution { background: var(--color-warn); animation: var(--animate-glow); }
-  .tag-cancelled { background: var(--color-danger); }
-
-  /* Traka s obavijestima na dnu */
-  .ticker { overflow: hidden; white-space: nowrap; }
-  .ticker > * { display: inline-block; padding-left: 100%; animation: var(--animate-ticker); }
-
-  /* Bez pokreta tekst stoji: inače bi ostao izvan vidnog polja, desno od trake */
-  @media (prefers-reduced-motion: reduce) {
-    .ticker > * { padding-left: 0; }
-  }
-}
-
-/* ==========================================================================
-   Veliki odmor: neon, valovi, zrake, odbrojavanje
-   Stanje velikog odmora uključuje se klasom .is-big-break na <body>.
-   ========================================================================== */
-
-@theme {
-  --color-neon-cyan: #38e8ff;
-  --color-neon-pink: #ff4fd8;
-}
-
-@keyframes break-spin { to { transform: rotate(360deg); } }
-@keyframes break-pulse { 50% { opacity: 0.4; } }
-@keyframes break-wave { to { transform: translateX(-50%); } }
-@keyframes break-neon { 50% { opacity: 0.85; text-shadow: 0 0 0.4vh var(--color-neon-cyan), 0 0 1.2vh var(--color-neon-cyan); } }
-@keyframes break-flash { 15% { opacity: 0.8; } to { opacity: 0; } }
-
-@layer components {
-  /* Pozadinski sloj: ispod kartica, vidljiv samo za vrijeme velikog odmora */
-  .break-layer { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 1.2s; }
-  .is-big-break .break-layer { opacity: 1; }
-  .break-rays {
-    position: absolute; left: -50%; top: -70%; width: 200%; height: 240%;
-    background: repeating-conic-gradient(at 50% 50%, rgb(90 169 255 / 0.16) 0 5deg, transparent 5deg 14deg);
-    mask-image: radial-gradient(circle, #000 0, transparent 58%);
-    animation: break-spin 70s linear infinite, break-pulse 5s ease-in-out infinite;
-  }
-  .break-wave { position: absolute; left: 0; width: 200%; overflow: visible; animation: break-wave 16s linear infinite; }
-
-  /* Kartice postaju prozirnije da se efekti vide kroz njih */
-  .is-big-break .board-row { background-color: rgb(11 13 16 / 0.6); }
-  .is-big-break .board-row:nth-child(odd) { background-color: rgb(21 26 32 / 0.6); }
-
-  /* Neonski naslov i odbrojavanje u zaglavlju */
-  .is-big-break .neon-title { color: #8ff6ff; letter-spacing: 0.04em; text-shadow: 0 0 1vh var(--color-neon-cyan), 0 0 2.4vh var(--color-neon-cyan); animation: break-neon 2.2s ease-in-out infinite; }
-  .is-big-break .break-countdown { font-size: 4vh; font-weight: 700; line-height: 1.1; color: #fff; text-shadow: 0 0 1.6vh rgb(56 232 255 / 0.75); }
-
-  /* Kratki svjetlosni bljesak (dodaj .go na početku i pri kraju odmora) */
-  .break-flash { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 25%, rgb(255 255 255 / 0.5), rgb(56 232 255 / 0.18) 40%, transparent 70%); }
-  .break-flash.go { animation: break-flash 1s ease-out; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .break-rays, .break-wave, .neon-title, .is-big-break .neon-title { animation: none; }
-  }
-
-  .break-wave {
-    bottom: 0;
-    height: 24vh;
-    fill: none;
-    stroke-width: 4;
-    filter: drop-shadow(0 0 1.2vh currentColor);
-  }
-  .break-wave-cyan { color: var(--color-neon-cyan); stroke: currentColor; }
-  .break-wave-pink {
-    bottom: 2vh;
-    height: 17vh;
-    color: var(--color-neon-pink);
-    stroke: currentColor;
-    opacity: 0.65;
-    animation-delay: -8s;
-  }
-  .is-big-break .break-progress { background: rgb(56 232 255 / 0.22); }
-  .is-big-break .break-progress-fill {
-    background: var(--color-neon-cyan);
-    box-shadow: 0 0 1.2vh var(--color-neon-cyan);
   }
 }

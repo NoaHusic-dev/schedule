@@ -15,7 +15,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>Tehnička škola Daruvar · Nastava</title>
+  <title>Raspored sati · Tehnička škola Daruvar</title>
 </svelte:head>
 
 {@render children()}
