@@ -1,2 +1,7 @@
 .idea
 CLAUDE.md
+.env
+.env.*
+!.env.example
+*.pem
+*.key
