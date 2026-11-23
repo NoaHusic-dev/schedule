@@ -11,6 +11,12 @@
   $effect(() => {
     if (updated.current) location.reload();
   });
+
+  $effect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  });
 </script>
 
 <svelte:head>

@@ -27,6 +27,11 @@
   );
   let theme = $state<"dark" | "light">("dark");
   let selectedGroup = $state<"A" | "B">("A");
+  const lastRefreshedText = $derived(
+    schedules.lastRefreshed
+      ? new Date(schedules.lastRefreshed).toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit" })
+      : "",
+  );
 
   function applyTheme(nextTheme: "dark" | "light") {
     theme = nextTheme;
@@ -47,6 +52,7 @@
   function selectClass(className: string) {
     selectedClass = className;
     localStorage.setItem("schedule-class", className);
+    closeSettings();
   }
 
   function closeSettings() {
@@ -146,8 +152,28 @@
           {#if schedules.loaded && isToday && isFinished}
             <span class="slot-count finished">Završena nastava</span>
           {/if}
+          <button
+            class="refresh-button"
+            type="button"
+            aria-label="Osvježi raspored"
+            title="Osvježi raspored"
+            disabled={schedules.refreshing}
+            onclick={() => schedules.refresh()}
+          >
+            ↻
+          </button>
         </div>
       </div>
+
+      {#if schedules.loaded}
+        <div class="refresh-status" role="status">
+          {#if schedules.offline}
+            <span>Offline · prikazuju se zadnji spremljeni podaci</span>
+          {:else if lastRefreshedText}
+            <span>Zadnje osvježeno u {lastRefreshedText}</span>
+          {/if}
+        </div>
+      {/if}
 
       {#if !schedules.loaded}
         <div class="message-card" role="status">
@@ -245,7 +271,13 @@
 </div>
 
 {#if showSettings}
-  <div class="settings-backdrop" role="presentation" onclick={closeSettings}>
+  <div
+    class="settings-backdrop"
+    role="presentation"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) closeSettings();
+    }}
+  >
     <div
       class="settings-panel"
       role="dialog"
@@ -263,7 +295,7 @@
       <label for="class-select">Razred</label>
       <select
         id="class-select"
-        value={selectedClass}
+        bind:value={selectedClass}
         onchange={(event) => selectClass(event.currentTarget.value)}
       >
         {#if schedules.classes.length === 0}
@@ -289,18 +321,19 @@
   <aside class="todo-promo" role="status" aria-label="Preporuka Todo stranice">
     <button class="todo-promo-close" type="button" aria-label="Zatvori obavijest" onclick={dismissTodoPromo}>×</button>
     <div class="todo-promo-copy">
-      <strong>Sve svoje zadatke i bilješke — na jednom mjestu.</strong>
+      <strong>Svi zadatci i bilješke na jednom mjestu.</strong>
       <span>Isprobaj TODO i ostavi papir za bilješke.</span>
     </div>
-    <a href="https://todo.noahusicdev.site" target="_blank" rel="noreferrer">Ispitaj Todo</a>
+    <a href="https://todo.noahusicdev.site" target="_blank" rel="noreferrer">Todo</a>
   </aside>
 {/if}
 
 <style>
   .page-shell {
-    min-height: 100vh;
+    display: flex;
     min-height: 100dvh;
-    overflow: hidden;
+    flex-direction: column;
+    overflow-x: hidden;
     background:
       radial-gradient(ellipse at 82% 4%, rgb(91 153 255 / 12%), transparent 29rem),
       #f4f6fb;
@@ -317,6 +350,8 @@
     min-height: 76px;
     align-items: center;
     justify-content: space-between;
+    padding-top: env(safe-area-inset-top);
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
     border-bottom: 1px solid #e4e9f2;
   }
 
@@ -350,8 +385,8 @@
 
   .theme-toggle {
     display: grid;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     margin-left: 0.15rem;
     place-items: center;
     border: 1px solid #dfe5ef;
@@ -369,8 +404,8 @@
 
   .settings-toggle {
     display: grid;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     margin-left: 0.15rem;
     place-items: center;
     border: 1px solid #dfe5ef;
@@ -381,6 +416,9 @@
   }
 
   main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     padding-top: clamp(2rem, 6vw, 4.5rem);
   }
 
@@ -491,6 +529,7 @@
 
   .group-picker button {
     min-width: 70px;
+    min-height: 44px;
     padding: 0.38rem 0.65rem;
     border: 0;
     border-radius: 999px;
@@ -534,6 +573,32 @@
     border-color: #cde8da;
     background: #eff8f3;
     color: #2f7656;
+  }
+
+  .refresh-button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    border: 1px solid #dde4ef;
+    border-radius: 50%;
+    background: white;
+    color: #536178;
+    font-size: 1.15rem;
+    cursor: pointer;
+  }
+
+  .refresh-button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  .refresh-status {
+    min-height: 1.25rem;
+    margin: -0.7rem 0 1rem;
+    color: #7d899d;
+    font-size: 0.72rem;
   }
 
   .timeline {
@@ -788,6 +853,7 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
+    margin-top: auto;
     padding: 2.5rem 0 1.5rem;
     color: #8490a2;
     font-size: 0.75rem;
@@ -976,6 +1042,16 @@
     color: #d6dfed;
   }
 
+  :global(html[data-theme="dark"]) .refresh-button {
+    border-color: #35465f;
+    background: #17243a;
+    color: #d6dfed;
+  }
+
+  :global(html[data-theme="dark"]) .refresh-status {
+    color: #aab9cc;
+  }
+
   :global(html[data-theme="dark"]) .settings-panel {
     border-color: #304159;
     background: #111d2f;
@@ -1090,6 +1166,7 @@
 
     .topbar {
       min-height: 64px;
+      gap: 0.5rem;
     }
 
     .brand {
@@ -1108,14 +1185,14 @@
     }
 
     .theme-toggle {
-      width: 30px;
-      height: 30px;
+      width: 44px;
+      height: 44px;
       font-size: 0.88rem;
     }
 
     .settings-toggle {
-      width: 30px;
-      height: 30px;
+      width: 44px;
+      height: 44px;
       font-size: 0.88rem;
     }
 
@@ -1219,13 +1296,21 @@
     }
 
     .page-footer {
+      width: 100%;
+      max-width: 100%;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 0.35rem;
-      padding: 1.75rem 0 1.25rem;
-      font-size: 0.62rem;
+      margin-top: auto;
+      padding:
+        1.75rem env(safe-area-inset-right, 0)
+        calc(1.25rem + env(safe-area-inset-bottom, 0))
+        env(safe-area-inset-left, 0);
+      font-size: clamp(0.68rem, 2.8vw, 0.75rem);
       text-align: center;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
+      white-space: normal;
     }
 
     .todo-promo {
