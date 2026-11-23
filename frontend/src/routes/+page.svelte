@@ -8,15 +8,21 @@
   const classSchedule = $derived(schedules.get("2 RT"));
   const isToday = $derived(schedules.date === isoDate(clock.now));
   const slots = $derived(isToday ? (classSchedule?.schedule ?? []) : []);
+  const isFinished = $derived(
+    isToday &&
+      slots.length > 0 &&
+      clock.now.getTime() > new Date(slots.at(-1)?.end ?? 0).getTime(),
+  );
   const activeIndex = $derived(
-    slots.findIndex((slot) => {
+    isToday ? slots.findIndex((slot) => {
       const now = clock.now.getTime();
       return now >= new Date(slot.start).getTime() && now < new Date(slot.end).getTime();
-    }),
+    }) : -1,
   );
   const nextIndex = $derived(
-    slots.findIndex((slot) => new Date(slot.start).getTime() > clock.now.getTime()),
+    isToday ? slots.findIndex((slot) => new Date(slot.start).getTime() > clock.now.getTime()) : -1,
   );
+
 
   $effect(() => clock.subscribe());
   $effect(() => schedules.subscribe());
@@ -37,7 +43,6 @@
       <span>Tehnička škola Daruvar</span>
     </a>
     <div class="live-clock" aria-label="Trenutno vrijeme">
-      <span class="live-dot" aria-hidden="true"></span>
       <time>{formatClock(clock.now)}</time>
     </div>
   </header>
@@ -58,8 +63,8 @@
           <p class="eyebrow">Dnevni pregled</p>
           <h2 id="schedule-title">Raspored za danas</h2>
         </div>
-        {#if schedules.loaded && isToday && classSchedule}
-          <span class="slot-count">{slots.length} termina</span>
+        {#if schedules.loaded && isToday && isFinished}
+          <span class="slot-count finished">Završena nastava</span>
         {/if}
       </div>
 
@@ -71,14 +76,14 @@
       {:else if !isToday}
         <div class="message-card" role="status">
           <span class="message-icon" aria-hidden="true">↻</span>
-          <p>Raspored za danas još nije dostupan.</p>
+          <p>Danas raspored još nije dostupan.</p>
           <span class="message-detail">Podaci se automatski osvježavaju.</span>
         </div>
       {:else if slots.length === 0}
         <div class="message-card" role="status">
           <span class="message-icon" aria-hidden="true">✓</span>
-          <p>Danas nema upisanih sati za 2. RT.</p>
-          <span class="message-detail">Provjeri ponovno kasnije za moguće izmjene.</span>
+          <p>Nema upisanih sati za 2. RT.</p>
+          <span class="message-detail">Odabrani dan je slobodan.</span>
         </div>
       {:else}
         <ol class="timeline">
@@ -109,7 +114,7 @@
                 </div>
                 <div class="lesson-list">
                   {#each slot.lessons as lesson, lessonIndex (`${lesson.subject.short}-${lesson.groups?.join("-") ?? lessonIndex}`)}
-                    <div class="lesson-detail">
+                    <div class="lesson-detail" class:group-a={lesson.groups?.some((group) => group.trim().toUpperCase() === "A")}>
                       <div class="subject">
                         {#if lesson.groups?.length}
                           <span class="group-name">{lesson.groups.join(" · ")}</span>
@@ -125,7 +130,6 @@
                         {/if}
                         {#if lesson.room}
                           <span class="room">
-                            <span class="meta-icon" aria-hidden="true">⌖</span>
                             {lesson.room}
                           </span>
                         {/if}
@@ -141,8 +145,15 @@
     </section>
 
     <footer class="page-footer">
-      <span>2. RT <span class="footer-divider">·</span> Tehnička škola Daruvar</span>
-      <span>Raspored se automatski osvježava</span>
+      <span>
+        Projekat napravio <a href="https://noahusicdev.site" target="_blank" rel="noreferrer">Noa Husić</a>
+        <span class="footer-divider">·</span>
+        <a href="https://github.com/noahusic-dev" target="_blank" rel="noreferrer">GitHub</a>
+      </span>
+      <span>
+        Napravljeno pomoću projekta
+        <a href="https://github.com/h00s" target="_blank" rel="noreferrer">h00s</a>
+      </span>
     </footer>
   </main>
 </div>
@@ -199,14 +210,6 @@
     font-weight: 650;
   }
 
-  .live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #35a879;
-    box-shadow: 0 0 0 4px rgb(53 168 121 / 12%);
-  }
-
   main {
     padding-top: clamp(2rem, 6vw, 4.5rem);
   }
@@ -214,11 +217,11 @@
   .hero {
     position: relative;
     display: flex;
-    min-height: 230px;
+    min-height: 180px;
     align-items: center;
     justify-content: space-between;
     overflow: hidden;
-    padding: clamp(1.75rem, 5vw, 3.5rem);
+    padding: clamp(1.25rem, 4vw, 2.5rem);
     border-radius: 26px;
     background: linear-gradient(118deg, #172c4d 0%, #234b80 65%, #3279bd 100%);
     box-shadow: 0 20px 50px rgb(25 54 94 / 16%);
@@ -256,7 +259,7 @@
 
   h1 {
     margin: 0;
-    font-size: clamp(3.2rem, 8vw, 5.5rem);
+    font-size: clamp(2.8rem, 7vw, 4.5rem);
     font-weight: 800;
     letter-spacing: -0.07em;
     line-height: 1;
@@ -277,7 +280,7 @@
   .class-mark {
     z-index: 1;
     display: grid;
-    width: clamp(96px, 17vw, 150px);
+    width: clamp(88px, 14vw, 120px);
     aspect-ratio: 1;
     place-items: center;
     border: 1px solid rgb(255 255 255 / 23%);
@@ -319,6 +322,12 @@
     font-size: 0.8rem;
     font-weight: 650;
     white-space: nowrap;
+  }
+
+  .slot-count.finished {
+    border-color: #cde8da;
+    background: #eff8f3;
+    color: #2f7656;
   }
 
   .timeline {
@@ -454,6 +463,19 @@
     padding: 0.85rem 1rem;
   }
 
+  .lesson-detail.group-a {
+    border-left: 4px solid #3279bd;
+    background: linear-gradient(90deg, rgb(50 121 189 / 8%), white 32%);
+  }
+
+  .lesson-detail.group-a .group-name {
+    display: inline-block;
+    padding: 0.18rem 0.48rem;
+    border-radius: 999px;
+    background: #3279bd;
+    color: white;
+  }
+
   .lesson-detail + .lesson-detail {
     border-top: 1px solid #f0f2f6;
   }
@@ -563,6 +585,16 @@
     padding: 2.5rem 0 1.5rem;
     color: #8490a2;
     font-size: 0.75rem;
+  }
+
+  .page-footer a {
+    color: #64748b;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .page-footer a:hover {
+    color: #3279bd;
   }
 
   .footer-divider {
