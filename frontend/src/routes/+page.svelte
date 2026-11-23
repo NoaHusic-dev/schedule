@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import logo from "#lib/assets/tsd-logo-dark.png";
   import { formatClock, formatDate, isoDate } from "#lib/helpers/format.ts";
   import { formatPeriods, periodIds } from "#lib/helpers/timetable.ts";
@@ -22,7 +23,23 @@
   const nextIndex = $derived(
     isToday ? slots.findIndex((slot) => new Date(slot.start).getTime() > clock.now.getTime()) : -1,
   );
+  let theme = $state<"dark" | "light">("dark");
 
+  function applyTheme(nextTheme: "dark" | "light") {
+    theme = nextTheme;
+    document.documentElement.dataset.theme = nextTheme;
+  }
+
+  function toggleTheme() {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    applyTheme(nextTheme);
+    localStorage.setItem("schedule-theme", nextTheme);
+  }
+
+  onMount(() => {
+    const savedTheme = localStorage.getItem("schedule-theme");
+    applyTheme(savedTheme === "light" ? "light" : "dark");
+  });
 
   $effect(() => clock.subscribe());
   $effect(() => schedules.subscribe());
@@ -44,6 +61,15 @@
     </a>
     <div class="live-clock" aria-label="Trenutno vrijeme">
       <time>{formatClock(clock.now)}</time>
+      <button
+        class="theme-toggle"
+        type="button"
+        aria-label={theme === "dark" ? "Promijeni na svijetlu temu" : "Promijeni na tamnu temu"}
+        title={theme === "dark" ? "Svijetla tema" : "Tamna tema"}
+        onclick={toggleTheme}
+      >
+        {theme === "dark" ? "☀" : "☾"}
+      </button>
     </div>
   </header>
 
@@ -146,13 +172,15 @@
 
     <footer class="page-footer">
       <span>
-        Projekat napravio <a href="https://noahusicdev.site" target="_blank" rel="noreferrer">Noa Husić</a>
+        Projekt napravio <a href="https://noahusicdev.site" target="_blank" rel="noreferrer">Noa Husić</a>
         <span class="footer-divider">·</span>
         <a href="https://github.com/noahusic-dev" target="_blank" rel="noreferrer">GitHub</a>
       </span>
       <span>
         Napravljeno pomoću projekta
         <a href="https://github.com/h00s" target="_blank" rel="noreferrer">h00s</a>
+        <span class="footer-divider">·</span>
+        <a href="https://kruno.husak.me" target="_blank" rel="noreferrer">Krunoslav Husak</a>
       </span>
     </footer>
   </main>
@@ -208,6 +236,25 @@
     font-size: 0.9rem;
     font-variant-numeric: tabular-nums;
     font-weight: 650;
+  }
+
+  .theme-toggle {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    margin-left: 0.15rem;
+    place-items: center;
+    border: 1px solid #dfe5ef;
+    border-radius: 50%;
+    background: white;
+    color: #536178;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 3px solid rgb(50 121 189 / 25%);
+    outline-offset: 2px;
   }
 
   main {
@@ -597,6 +644,78 @@
     color: #3279bd;
   }
 
+  :global(html[data-theme="dark"]) .page-shell {
+    background:
+      radial-gradient(ellipse at 82% 4%, rgb(91 153 255 / 10%), transparent 29rem),
+      #0d1626;
+  }
+
+  :global(html[data-theme="dark"]) .topbar {
+    border-bottom-color: #26344a;
+  }
+
+  :global(html[data-theme="dark"]) .brand,
+  :global(html[data-theme="dark"]) .live-clock {
+    color: #d6dfed;
+  }
+
+  :global(html[data-theme="dark"]) .theme-toggle {
+    border-color: #35465f;
+    background: #17243a;
+    color: #d6dfed;
+  }
+
+  :global(html[data-theme="dark"]) .schedule-section h2,
+  :global(html[data-theme="dark"]) .subject h3,
+  :global(html[data-theme="dark"]) .time-column {
+    color: #edf3fb;
+  }
+
+  :global(html[data-theme="dark"]) .eyebrow,
+  :global(html[data-theme="dark"]) .end-time,
+  :global(html[data-theme="dark"]) .lesson-meta,
+  :global(html[data-theme="dark"]) .page-footer,
+  :global(html[data-theme="dark"]) .message-detail {
+    color: #9aabc2;
+  }
+
+  :global(html[data-theme="dark"]) .slot-count,
+  :global(html[data-theme="dark"]) .lesson-card,
+  :global(html[data-theme="dark"]) .message-card {
+    border-color: #26344a;
+    background: #111d2f;
+  }
+
+  :global(html[data-theme="dark"]) .slot-count {
+    color: #bcc8d8;
+  }
+
+  :global(html[data-theme="dark"]) .lesson-heading,
+  :global(html[data-theme="dark"]) .lesson-detail + .lesson-detail {
+    border-color: #26344a;
+  }
+
+  :global(html[data-theme="dark"]) .lesson-detail.group-a {
+    background: linear-gradient(90deg, rgb(50 121 189 / 18%), #111d2f 32%);
+  }
+
+  :global(html[data-theme="dark"]) .room {
+    background: #1b2a40;
+    color: #cbd6e5;
+  }
+
+  :global(html[data-theme="dark"]) .timeline-item:not(:last-child) .timeline-rail::after {
+    background: #2b3b53;
+  }
+
+  :global(html[data-theme="dark"]) .rail-dot {
+    border-color: #0d1626;
+  }
+
+  :global(html[data-theme="dark"]) .page-footer a {
+    color: #aab9cc;
+  }
+
   .footer-divider {
     padding-inline: 0.2rem;
     color: #bac3d0;
@@ -627,14 +746,29 @@
       font-size: 0.8rem;
     }
 
+    .theme-toggle {
+      width: 30px;
+      height: 30px;
+      font-size: 0.88rem;
+    }
+
     main {
       padding-top: 1.5rem;
     }
 
     .hero {
-      min-height: 180px;
-      padding: 1.5rem;
+      min-height: 150px;
+      padding: 1.25rem;
       border-radius: 20px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+    }
+
+    .date {
+      margin-top: 0.65rem;
+      font-size: 0.86rem;
     }
 
     .hero::after {
@@ -706,9 +840,13 @@
     }
 
     .page-footer {
-      flex-direction: column;
-      gap: 0.45rem;
-      padding-top: 2rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 1.75rem 0 1.25rem;
+      font-size: 0.62rem;
+      text-align: center;
+      white-space: nowrap;
     }
   }
 
