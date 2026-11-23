@@ -6,7 +6,9 @@
   import { clock } from "#lib/stores/clock.svelte.ts";
   import { schedules } from "#lib/stores/schedules.svelte.ts";
 
-  const classSchedule = $derived(schedules.get("2 RT"));
+  let selectedClass = $state("2 RT");
+  const classSchedule = $derived(schedules.get(selectedClass));
+  let showSettings = $state(false);
   const isToday = $derived(schedules.date === isoDate(clock.now));
   const slots = $derived(isToday ? (classSchedule?.schedule ?? []) : []);
   const isFinished = $derived(
@@ -24,6 +26,7 @@
     isToday ? slots.findIndex((slot) => new Date(slot.start).getTime() > clock.now.getTime()) : -1,
   );
   let theme = $state<"dark" | "light">("dark");
+  let selectedGroup = $state<"A" | "B">("A");
 
   function applyTheme(nextTheme: "dark" | "light") {
     theme = nextTheme;
@@ -36,31 +39,67 @@
     localStorage.setItem("schedule-theme", nextTheme);
   }
 
+  function selectGroup(group: "A" | "B") {
+    selectedGroup = group;
+    localStorage.setItem("schedule-group", group);
+  }
+
+  function selectClass(className: string) {
+    selectedClass = className;
+    localStorage.setItem("schedule-class", className);
+  }
+
+  function closeSettings() {
+    showSettings = false;
+  }
+
   onMount(() => {
     const savedTheme = localStorage.getItem("schedule-theme");
     applyTheme(savedTheme === "light" ? "light" : "dark");
+    const savedGroup = localStorage.getItem("schedule-group");
+    selectedGroup = savedGroup === "B" ? "B" : "A";
+    const savedClass = localStorage.getItem("schedule-class");
+    if (savedClass) selectedClass = savedClass;
+
+    if (localStorage.getItem("todo-promo-dismissed") !== "true") {
+      setTimeout(() => (showTodoPromo = true), 1200);
+    }
   });
+
+  let showTodoPromo = $state(false);
+
+  function dismissTodoPromo() {
+    showTodoPromo = false;
+    localStorage.setItem("todo-promo-dismissed", "true");
+  }
 
   $effect(() => clock.subscribe());
   $effect(() => schedules.subscribe());
 </script>
 
 <svelte:head>
-  <title>2. RT · Raspored sati</title>
+  <title>{selectedClass} · Raspored sati</title>
   <meta
     name="description"
-    content="Dnevni raspored sati za razred 2. RT Tehničke škole Daruvar."
+    content={`Dnevni raspored sati za razred ${selectedClass} Tehničke škole Daruvar.`}
   />
 </svelte:head>
 
 <div class="page-shell">
   <header class="topbar">
-    <a class="brand" href="/" aria-label="Raspored sati za 2. RT">
+    <a class="brand" href="/" aria-label={`Raspored sati za ${selectedClass}`}>
       <img src={logo} alt="" />
       <span>Tehnička škola Daruvar</span>
     </a>
     <div class="live-clock" aria-label="Trenutno vrijeme">
       <time>{formatClock(clock.now)}</time>
+      <button
+        class="settings-toggle"
+        type="button"
+        aria-label="Postavke"
+        title="Postavke"
+        onclick={() => (showSettings = true)}
+      >⚙</button>
       <button
         class="theme-toggle"
         type="button"
@@ -77,10 +116,10 @@
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="eyebrow">Raspored nastave</p>
-        <h1 id="page-title">2. <span>RT</span></h1>
+        <h1 id="page-title">{selectedClass.split(" ")[0]} <span>{selectedClass.split(" ").slice(1).join(" ")}</span></h1>
         <p class="date">{formatDate(clock.now)}</p>
       </div>
-      <div class="class-mark" aria-hidden="true">RT</div>
+      <div class="class-mark" aria-hidden="true">{selectedClass.split(" ").slice(1).join("") || selectedClass}</div>
     </section>
 
     <section class="schedule-section" aria-labelledby="schedule-title">
@@ -89,9 +128,25 @@
           <p class="eyebrow">Dnevni pregled</p>
           <h2 id="schedule-title">Raspored za danas</h2>
         </div>
-        {#if schedules.loaded && isToday && isFinished}
-          <span class="slot-count finished">Završena nastava</span>
-        {/if}
+        <div class="heading-actions">
+          <div class="group-picker" aria-label="Istaknuta grupa">
+            <button
+              type="button"
+              class:selected={selectedGroup === "A"}
+              aria-pressed={selectedGroup === "A"}
+              onclick={() => selectGroup("A")}
+            >A grupa</button>
+            <button
+              type="button"
+              class:selected={selectedGroup === "B"}
+              aria-pressed={selectedGroup === "B"}
+              onclick={() => selectGroup("B")}
+            >B grupa</button>
+          </div>
+          {#if schedules.loaded && isToday && isFinished}
+            <span class="slot-count finished">Završena nastava</span>
+          {/if}
+        </div>
       </div>
 
       {#if !schedules.loaded}
@@ -108,7 +163,7 @@
       {:else if slots.length === 0}
         <div class="message-card" role="status">
           <span class="message-icon" aria-hidden="true">✓</span>
-          <p>Nema upisanih sati za 2. RT.</p>
+          <p>Nema upisanih sati za {selectedClass}.</p>
           <span class="message-detail">Odabrani dan je slobodan.</span>
         </div>
       {:else}
@@ -140,7 +195,10 @@
                 </div>
                 <div class="lesson-list">
                   {#each slot.lessons as lesson, lessonIndex (`${lesson.subject.short}-${lesson.groups?.join("-") ?? lessonIndex}`)}
-                    <div class="lesson-detail" class:group-a={lesson.groups?.some((group) => group.trim().toUpperCase() === "A")}>
+                    <div
+                      class="lesson-detail"
+                      class:group-highlighted={lesson.groups?.some((group) => group.trim().toUpperCase() === selectedGroup)}
+                    >
                       <div class="subject">
                         {#if lesson.groups?.length}
                           <span class="group-name">{lesson.groups.join(" · ")}</span>
@@ -185,6 +243,58 @@
     </footer>
   </main>
 </div>
+
+{#if showSettings}
+  <div class="settings-backdrop" role="presentation" onclick={closeSettings}>
+    <div
+      class="settings-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+    >
+      <div class="settings-heading">
+        <div>
+          <p class="eyebrow">Prikaz rasporeda</p>
+          <h2 id="settings-title">Postavke</h2>
+        </div>
+        <button class="settings-close" type="button" aria-label="Zatvori postavke" onclick={closeSettings}>×</button>
+      </div>
+
+      <label for="class-select">Razred</label>
+      <select
+        id="class-select"
+        value={selectedClass}
+        onchange={(event) => selectClass(event.currentTarget.value)}
+      >
+        {#if schedules.classes.length === 0}
+          <option value={selectedClass}>{selectedClass}</option>
+        {:else}
+          {#each schedules.classes as classScheduleOption (classScheduleOption.class)}
+            <option value={classScheduleOption.class}>{classScheduleOption.class}</option>
+          {/each}
+        {/if}
+      </select>
+
+      <div class="settings-theme">
+        <span>Tema</span>
+        <button type="button" onclick={toggleTheme}>
+          {theme === "dark" ? "Svijetla tema" : "Tamna tema"}
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showTodoPromo}
+  <aside class="todo-promo" role="status" aria-label="Preporuka Todo stranice">
+    <button class="todo-promo-close" type="button" aria-label="Zatvori obavijest" onclick={dismissTodoPromo}>×</button>
+    <div class="todo-promo-copy">
+      <strong>Sve svoje zadatke i bilješke — na jednom mjestu.</strong>
+      <span>Isprobaj TODO i ostavi papir za bilješke.</span>
+    </div>
+    <a href="https://todo.noahusicdev.site" target="_blank" rel="noreferrer">Ispitaj Todo</a>
+  </aside>
+{/if}
 
 <style>
   .page-shell {
@@ -255,6 +365,19 @@
   .theme-toggle:focus-visible {
     outline: 3px solid rgb(50 121 189 / 25%);
     outline-offset: 2px;
+  }
+
+  .settings-toggle {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    margin-left: 0.15rem;
+    place-items: center;
+    border: 1px solid #dfe5ef;
+    border-radius: 50%;
+    background: white;
+    color: #536178;
+    cursor: pointer;
   }
 
   main {
@@ -350,6 +473,42 @@
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1.5rem;
+  }
+
+  .heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .group-picker {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid #dde4ef;
+    border-radius: 999px;
+    background: white;
+  }
+
+  .group-picker button {
+    min-width: 70px;
+    padding: 0.38rem 0.65rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #68768b;
+    font-size: 0.72rem;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .group-picker button.selected {
+    background: #3279bd;
+    color: white;
+  }
+
+  .group-picker button:focus-visible {
+    outline: 3px solid rgb(50 121 189 / 25%);
+    outline-offset: 2px;
   }
 
   h2 {
@@ -510,12 +669,12 @@
     padding: 0.85rem 1rem;
   }
 
-  .lesson-detail.group-a {
+  .lesson-detail.group-highlighted {
     border-left: 4px solid #3279bd;
     background: linear-gradient(90deg, rgb(50 121 189 / 8%), white 32%);
   }
 
-  .lesson-detail.group-a .group-name {
+  .lesson-detail.group-highlighted .group-name {
     display: inline-block;
     padding: 0.18rem 0.48rem;
     border-radius: 999px;
@@ -644,6 +803,152 @@
     color: #3279bd;
   }
 
+  .settings-backdrop {
+    position: fixed;
+    z-index: 80;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(10 20 35 / 42%);
+    backdrop-filter: blur(6px);
+  }
+
+  .settings-panel {
+    width: min(390px, 100%);
+    padding: 1.25rem;
+    border: 1px solid #dde4ef;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 20px 60px rgb(20 38 66 / 24%);
+  }
+
+  .settings-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .settings-heading h2 {
+    font-size: 1.35rem;
+  }
+
+  .settings-close {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 1px solid #dde4ef;
+    border-radius: 50%;
+    background: #f7f9fc;
+    color: #69778d;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .settings-panel label,
+  .settings-theme span {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #68768b;
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
+
+  .settings-panel select {
+    width: 100%;
+    height: 46px;
+    margin-bottom: 1.1rem;
+    padding: 0 0.75rem;
+    border: 1px solid #dfe5ef;
+    border-radius: 10px;
+    background: white;
+    color: #26344b;
+  }
+
+  .settings-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .settings-theme span {
+    margin: 0;
+  }
+
+  .settings-theme button {
+    padding: 0.48rem 0.7rem;
+    border: 1px solid #dfe5ef;
+    border-radius: 999px;
+    background: #f7f9fc;
+    color: #536178;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .todo-promo {
+    position: fixed;
+    z-index: 50;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: min(410px, calc(100% - 2.5rem));
+    gap: 0.8rem 1rem;
+    align-items: center;
+    padding: 1rem 1.1rem;
+    border: 1px solid #dde4ef;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 96%);
+    box-shadow: 0 12px 35px rgb(31 51 84 / 16%);
+    backdrop-filter: blur(12px);
+  }
+
+  .todo-promo-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .todo-promo-copy strong {
+    color: #26344b;
+    font-size: 0.9rem;
+  }
+
+  .todo-promo-copy span {
+    margin-top: 0.15rem;
+    color: #738199;
+    font-size: 0.76rem;
+  }
+
+  .todo-promo a {
+    border-radius: 999px;
+    background: #3279bd;
+    color: white;
+    font-size: 0.76rem;
+    font-weight: 750;
+    padding: 0.58rem 0.8rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .todo-promo-close {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border: 1px solid #dde4ef;
+    border-radius: 50%;
+    background: white;
+    color: #7d899d;
+    cursor: pointer;
+  }
+
   :global(html[data-theme="dark"]) .page-shell {
     background:
       radial-gradient(ellipse at 82% 4%, rgb(91 153 255 / 10%), transparent 29rem),
@@ -663,6 +968,34 @@
     border-color: #35465f;
     background: #17243a;
     color: #d6dfed;
+  }
+
+  :global(html[data-theme="dark"]) .settings-toggle {
+    border-color: #35465f;
+    background: #17243a;
+    color: #d6dfed;
+  }
+
+  :global(html[data-theme="dark"]) .settings-panel {
+    border-color: #304159;
+    background: #111d2f;
+  }
+
+  :global(html[data-theme="dark"]) .settings-heading h2,
+  :global(html[data-theme="dark"]) .settings-panel select {
+    color: #edf3fb;
+  }
+
+  :global(html[data-theme="dark"]) .settings-close,
+  :global(html[data-theme="dark"]) .settings-theme button {
+    border-color: #304159;
+    background: #17243a;
+    color: #bac7d8;
+  }
+
+  :global(html[data-theme="dark"]) .settings-panel select {
+    border-color: #304159;
+    background: #17243a;
   }
 
   :global(html[data-theme="dark"]) .schedule-section h2,
@@ -690,12 +1023,21 @@
     color: #bcc8d8;
   }
 
+  :global(html[data-theme="dark"]) .group-picker {
+    border-color: #304159;
+    background: #17243a;
+  }
+
+  :global(html[data-theme="dark"]) .group-picker button {
+    color: #aab9cc;
+  }
+
   :global(html[data-theme="dark"]) .lesson-heading,
   :global(html[data-theme="dark"]) .lesson-detail + .lesson-detail {
     border-color: #26344a;
   }
 
-  :global(html[data-theme="dark"]) .lesson-detail.group-a {
+  :global(html[data-theme="dark"]) .lesson-detail.group-highlighted {
     background: linear-gradient(90deg, rgb(50 121 189 / 18%), #111d2f 32%);
   }
 
@@ -714,6 +1056,25 @@
 
   :global(html[data-theme="dark"]) .page-footer a {
     color: #aab9cc;
+  }
+
+  :global(html[data-theme="dark"]) .todo-promo {
+    border-color: #304159;
+    background: rgb(17 29 47 / 96%);
+  }
+
+  :global(html[data-theme="dark"]) .todo-promo-copy strong {
+    color: #edf3fb;
+  }
+
+  :global(html[data-theme="dark"]) .todo-promo-copy span {
+    color: #9aabc2;
+  }
+
+  :global(html[data-theme="dark"]) .todo-promo-close {
+    border-color: #304159;
+    background: #17243a;
+    color: #bac7d8;
   }
 
   .footer-divider {
@@ -752,6 +1113,12 @@
       font-size: 0.88rem;
     }
 
+    .settings-toggle {
+      width: 30px;
+      height: 30px;
+      font-size: 0.88rem;
+    }
+
     main {
       padding-top: 1.5rem;
     }
@@ -784,6 +1151,18 @@
     .section-heading {
       align-items: center;
       margin-bottom: 1.1rem;
+    }
+
+    .heading-actions {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+    }
+
+    .group-picker button {
+      min-width: 58px;
+      padding-inline: 0.45rem;
+      font-size: 0.66rem;
     }
 
     .timeline {
@@ -847,6 +1226,21 @@
       font-size: 0.62rem;
       text-align: center;
       white-space: nowrap;
+    }
+
+    .todo-promo {
+      right: 0.75rem;
+      bottom: 0.75rem;
+      width: calc(100% - 1.5rem);
+      padding: 0.85rem 0.9rem;
+    }
+
+    .todo-promo-copy strong {
+      font-size: 0.82rem;
+    }
+
+    .todo-promo-copy span {
+      font-size: 0.7rem;
     }
   }
 

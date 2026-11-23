@@ -67,6 +67,9 @@ function createScheduleStore() {
     get(className: string): ClassSchedule | undefined {
       return classes[className];
     },
+    get classes(): ClassSchedule[] {
+      return Object.values(classes).sort((a, b) => a.class.localeCompare(b.class, "hr"));
+    },
     /** `$effect(() => schedules.subscribe())` polls while a component shows the board. */
     subscribe(): () => void {
       if (consumers++ === 0) {
