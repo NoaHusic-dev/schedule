@@ -19,9 +19,13 @@ export default defineConfig({
   ],
   server: {
     // Development is same-origin like production: the browser talks only to Vite, which forwards
-    // /api to the Go server. The object form keeps Host intact, which the csrf middleware checks.
+    // /api to the API. By default that is the public tsd-timetable instance; to use a local Go
+    // backend instead, run with API_TARGET=http://localhost:3000.
     proxy: {
-      "/api": { target: "http://localhost:3000" },
+      "/api": {
+        target: process.env.API_TARGET ?? "https://tsd-timetable.husak.me",
+        changeOrigin: true,
+      },
     },
   },
 });

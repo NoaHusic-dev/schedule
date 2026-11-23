@@ -1,0 +1,16 @@
+# Hosting na Netlifyju: /api se proslijeđuje na API (bez CORS problema), ostalo je SPA.
+[build]
+  base = "frontend"
+  command = "npm i -g bun && bun install --frozen-lockfile && bun run build"
+  publish = "build"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://tsd-timetable.husak.me/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
