@@ -1,7 +1,7 @@
 # Raspored sati za 2. RT
 
 Raspored sati namijenjen lakšem dohvaćanju i prikazu
-rasporeda razreda 2. RT. Planirana adresa: `https://schedule.noahusicdev.site`.
+rasporeda razreda 2. RT. Planirana adresa: `https://schedule.noahusicdev.site`, ali trenutno je objavljeno na https://schedule-tsd.netlify.app/.
 
 ## Autorstvo i vlasništvo
 
@@ -23,9 +23,3 @@ bun run dev
 Razvojni server (Vite) prosljeđuje `/api` na javni API
 `https://tsd-timetable.husak.me`, pa nije potreban vlastiti backend. Za lokalni
 Go backend pokreni `API_TARGET=http://localhost:3000 bun run dev`.
-
-## Objava
-
-`frontend/netlify.toml` sadrži postavke za Netlify: gradi stranicu i proslijeđuje
-`/api` na isti API. Prije javne objave provjeri smiješ li koristiti taj API
-(vidi „Autorstvo i vlasništvo”).
