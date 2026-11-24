@@ -1,4 +1,4 @@
-# Raspored sati za 2. RT
+# Raspored sati za 2. RT v1.0
 
 Raspored sati namijenjen lakšem dohvaćanju i prikazu
 rasporeda razreda 2. RT. Planirana adresa: `https://schedule.noahusicdev.site`, ali trenutno je objavljeno na https://schedule-tsd.netlify.app/.
