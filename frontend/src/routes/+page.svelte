@@ -6,6 +6,7 @@
   import { clock } from "#lib/stores/clock.svelte.ts";
   import { schedules } from "#lib/stores/schedules.svelte.ts";
 
+  const APP_VERSION = "1.0.0";
   let selectedClass = $state("2 RT");
   const classSchedule = $derived(schedules.get(selectedClass));
   let showSettings = $state(false);
@@ -67,17 +68,7 @@
     const savedClass = localStorage.getItem("schedule-class");
     if (savedClass) selectedClass = savedClass;
 
-    if (localStorage.getItem("todo-promo-dismissed") !== "true") {
-      setTimeout(() => (showTodoPromo = true), 1200);
-    }
   });
-
-  let showTodoPromo = $state(false);
-
-  function dismissTodoPromo() {
-    showTodoPromo = false;
-    localStorage.setItem("todo-promo-dismissed", "true");
-  }
 
   $effect(() => clock.subscribe());
   $effect(() => schedules.subscribe());
@@ -265,6 +256,8 @@
         <a href="https://github.com/h00s" target="_blank" rel="noreferrer">h00s</a>
         <span class="footer-divider">·</span>
         <a href="https://kruno.husak.me" target="_blank" rel="noreferrer">Krunoslav Husak</a>
+        <span class="footer-divider">·</span>
+        Verzija {APP_VERSION}
       </span>
     </footer>
   </main>
@@ -313,19 +306,17 @@
           {theme === "dark" ? "Svijetla tema" : "Tamna tema"}
         </button>
       </div>
+
+      <section class="usage-guide" aria-labelledby="usage-title">
+        <h3 id="usage-title">Kako koristiti</h3>
+        <ol>
+          <li>Odaberi svoj razred u postavkama.</li>
+          <li>Izaberi A ili B grupu za isticanje predmeta.</li>
+          <li>Svijetlo plavi sat označuje nastavu koja je trenutno u tijeku.</li>
+        </ol>
+      </section>
     </div>
   </div>
-{/if}
-
-{#if showTodoPromo}
-  <aside class="todo-promo" role="status" aria-label="Preporuka Todo stranice">
-    <button class="todo-promo-close" type="button" aria-label="Zatvori obavijest" onclick={dismissTodoPromo}>×</button>
-    <div class="todo-promo-copy">
-      <strong>Svi zadatci i bilješke na jednom mjestu.</strong>
-      <span>Isprobaj TODO i ostavi papir za bilješke.</span>
-    </div>
-    <a href="https://todo.noahusicdev.site" target="_blank" rel="noreferrer">Todo</a>
-  </aside>
 {/if}
 
 <style>
@@ -661,8 +652,12 @@
   }
 
   .active .rail-dot {
-    background: #3279bd;
-    box-shadow: 0 0 0 4px rgb(50 121 189 / 16%);
+    width: 14px;
+    height: 14px;
+    border: 3px solid #bde2ff;
+    background: #77bdf8;
+    box-shadow: 0 0 0 5px rgb(119 189 248 / 18%);
+    animation: current-pulse 1.8s ease-in-out infinite;
   }
 
   .lesson-card {
@@ -675,8 +670,18 @@
   }
 
   .active .lesson-card {
-    border-color: #9dc8f0;
-    box-shadow: 0 8px 24px rgb(50 121 189 / 10%);
+    border-color: #77bdf8;
+    background: linear-gradient(135deg, #f7fbff 0%, white 55%);
+    box-shadow: 0 8px 28px rgb(119 189 248 / 22%), 0 0 0 1px rgb(119 189 248 / 18%);
+  }
+
+  @keyframes current-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 5px rgb(119 189 248 / 18%);
+    }
+    50% {
+      box-shadow: 0 0 0 9px rgb(119 189 248 / 8%);
+    }
   }
 
   .lesson-heading {
@@ -939,6 +944,26 @@
     justify-content: space-between;
   }
 
+  .usage-guide {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e8edf5;
+  }
+
+  .usage-guide h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+  }
+
+  .usage-guide ol {
+    display: grid;
+    margin: 0;
+    padding-left: 1.15rem;
+    gap: 0.35rem;
+    color: #68768b;
+    font-size: 0.78rem;
+  }
+
   .settings-theme span {
     margin: 0;
   }
@@ -951,67 +976,6 @@
     color: #536178;
     font-size: 0.75rem;
     font-weight: 700;
-    cursor: pointer;
-  }
-
-  .todo-promo {
-    position: fixed;
-    z-index: 50;
-    right: 1.25rem;
-    bottom: 1.25rem;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    width: min(410px, calc(100% - 2.5rem));
-    gap: 0.8rem 1rem;
-    align-items: center;
-    padding: 1rem 1.1rem;
-    border: 1px solid #dde4ef;
-    border-radius: 14px;
-    background: rgb(255 255 255 / 96%);
-    box-shadow: 0 12px 35px rgb(31 51 84 / 16%);
-    backdrop-filter: blur(12px);
-  }
-
-  .todo-promo-copy {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-  }
-
-  .todo-promo-copy strong {
-    color: #26344b;
-    font-size: 0.9rem;
-  }
-
-  .todo-promo-copy span {
-    margin-top: 0.15rem;
-    color: #738199;
-    font-size: 0.76rem;
-  }
-
-  .todo-promo a {
-    border-radius: 999px;
-    background: #3279bd;
-    color: white;
-    font-size: 0.76rem;
-    font-weight: 750;
-    padding: 0.58rem 0.8rem;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .todo-promo-close {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    display: grid;
-    width: 24px;
-    height: 24px;
-    place-items: center;
-    border: 1px solid #dde4ef;
-    border-radius: 50%;
-    background: white;
-    color: #7d899d;
     cursor: pointer;
   }
 
@@ -1134,23 +1098,22 @@
     color: #aab9cc;
   }
 
-  :global(html[data-theme="dark"]) .todo-promo {
-    border-color: #304159;
-    background: rgb(17 29 47 / 96%);
+  :global(html[data-theme="dark"]) .usage-guide {
+    border-top-color: #304159;
   }
 
-  :global(html[data-theme="dark"]) .todo-promo-copy strong {
+  :global(html[data-theme="dark"]) .usage-guide h3,
+  :global(html[data-theme="dark"]) .usage-guide ol {
     color: #edf3fb;
   }
 
-  :global(html[data-theme="dark"]) .todo-promo-copy span {
-    color: #9aabc2;
+  :global(html[data-theme="dark"]) .usage-guide ol {
+    color: #bac7d8;
   }
 
-  :global(html[data-theme="dark"]) .todo-promo-close {
-    border-color: #304159;
-    background: #17243a;
-    color: #bac7d8;
+  :global(html[data-theme="dark"]) .active .lesson-card {
+    border-color: #77bdf8;
+    background: linear-gradient(135deg, rgb(119 189 248 / 14%), #111d2f 55%);
   }
 
   .footer-divider {
@@ -1313,25 +1276,15 @@
       white-space: normal;
     }
 
-    .todo-promo {
-      right: 0.75rem;
-      bottom: 0.75rem;
-      width: calc(100% - 1.5rem);
-      padding: 0.85rem 0.9rem;
-    }
-
-    .todo-promo-copy strong {
-      font-size: 0.82rem;
-    }
-
-    .todo-promo-copy span {
-      font-size: 0.7rem;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .loader {
       animation-duration: 2s;
+    }
+
+    .active .rail-dot {
+      animation: none;
     }
   }
 </style>
