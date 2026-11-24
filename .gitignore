@@ -6,3 +6,4 @@ CLAUDE.md
 *.pem
 *.key
 .netlify
+.DS_Store
